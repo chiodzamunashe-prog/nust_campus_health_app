@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
-import 'mock_service.dart';
+import 'repository.dart';
+import 'mock_repository.dart';
 import 'patient_summary_screen.dart';
 
 class PsychiatristDashboardScreen extends StatefulWidget {
@@ -16,7 +17,9 @@ class _PsychiatristDashboardScreenState extends State<PsychiatristDashboardScree
   @override
   void initState() {
     super.initState();
-    _appointmentsFuture = MockService.fetchAppointments();
+    // Ensure repository is initialized (defaults to mock)
+    initMockRepository();
+    _appointmentsFuture = repository.fetchAppointments();
   }
 
   @override
@@ -41,7 +44,7 @@ class _PsychiatristDashboardScreenState extends State<PsychiatristDashboardScree
             itemBuilder: (context, index) {
               final appt = appointments[index];
               return FutureBuilder<Patient?>(
-                future: MockService.getPatientById(appt.patientId),
+                future: repository.getPatientById(appt.patientId),
                 builder: (c, psnap) {
                   final patient = psnap.data;
                   return ListTile(
@@ -52,7 +55,7 @@ class _PsychiatristDashboardScreenState extends State<PsychiatristDashboardScree
                       children: [
                         Text('${appt.time.toLocal()}'),
                         const SizedBox(height: 4),
-                        Row(
+                          Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -62,22 +65,22 @@ class _PsychiatristDashboardScreenState extends State<PsychiatristDashboardScree
                             const SizedBox(width: 8),
                             if (appt.status == 'pending') ...[
                               TextButton(
-                                onPressed: () async {
-                                  final ok = await MockService.updateAppointmentStatus(appt.id, 'confirmed');
-                                  if (ok) {
-                                    setState(() {
-                                      _appointmentsFuture = MockService.fetchAppointments();
-                                    });
-                                  }
-                                },
-                                child: const Text('Accept'),
-                              ),
+                                  onPressed: () async {
+                                    final ok = await repository.updateAppointmentStatus(appt.id, 'confirmed');
+                                    if (ok) {
+                                      setState(() {
+                                        _appointmentsFuture = repository.fetchAppointments();
+                                      });
+                                    }
+                                  },
+                                  child: const Text('Accept'),
+                                ),
                               TextButton(
                                 onPressed: () async {
-                                  final ok = await MockService.updateAppointmentStatus(appt.id, 'declined');
+                                  final ok = await repository.updateAppointmentStatus(appt.id, 'declined');
                                   if (ok) {
                                     setState(() {
-                                      _appointmentsFuture = MockService.fetchAppointments();
+                                      _appointmentsFuture = repository.fetchAppointments();
                                     });
                                   }
                                 },

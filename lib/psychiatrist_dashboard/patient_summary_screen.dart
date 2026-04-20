@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
-import 'mock_service.dart';
+import 'repository.dart';
+import 'mock_repository.dart';
 
 
 class PatientSummaryScreen extends StatefulWidget {
@@ -20,7 +21,8 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
   @override
   void initState() {
     super.initState();
-    _notesFuture = MockService.fetchNotesByAppointment(widget.appointmentId);
+    initMockRepository();
+    _notesFuture = repository.fetchNotesByAppointment(widget.appointmentId);
   }
 
   Future<void> _refreshNotes() async {
