@@ -47,11 +47,43 @@ class _PsychiatristDashboardScreenState extends State<PsychiatristDashboardScree
                   return ListTile(
                     leading: const CircleAvatar(child: Icon(Icons.person)),
                     title: Text(patient?.name ?? 'Unknown'),
-                    subtitle: Text('${appt.time} • ${appt.status}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${appt.time.toLocal()}'),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(color: appt.status == 'pending' ? Colors.orange[100] : appt.status == 'confirmed' ? Colors.green[100] : Colors.grey[200], borderRadius: BorderRadius.circular(12)),
+                              child: Text(appt.status, style: const TextStyle(fontSize: 12)),
+                            ),
+                            const SizedBox(width: 8),
+                            if (appt.status == 'pending') ...[
+                              TextButton(
+                                onPressed: () async {
+                                  final ok = await MockService.updateAppointmentStatus(appt.id, 'confirmed');
+                                  if (ok) setState(() => _appointmentsFuture = MockService.fetchAppointments());
+                                },
+                                child: const Text('Accept'),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  final ok = await MockService.updateAppointmentStatus(appt.id, 'declined');
+                                  if (ok) setState(() => _appointmentsFuture = MockService.fetchAppointments());
+                                },
+                                child: const Text('Decline', style: TextStyle(color: Colors.redAccent)),
+                              ),
+                            ]
+                          ],
+                        )
+                      ],
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       if (patient != null) {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => PatientSummaryScreen(patient: patient)));
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => PatientSummaryScreen(patient: patient, appointmentId: appt.id)));
                       }
                     },
                   );
