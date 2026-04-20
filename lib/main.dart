@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'psychiatrist_dashboard/dashboard_screen.dart';
 import 'auth/login_screen.dart';
 import 'auth/auth_service.dart';
+import 'psychiatrist_dashboard/mock_repository.dart';
+import 'psychiatrist_dashboard/firestore_repository.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +16,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return FutureBuilder(
+      future: Firebase.initializeApp(),
+      builder: (context, snapshot) {
+        // Initialize repository to Firestore if Firebase initialized, otherwise use mock
+        if (snapshot.connectionState == ConnectionState.done) {
+          try {
+            repository = FirestoreRepository();
+          } catch (_) {
+            initMockRepository();
+          }
+        } else {
+          initMockRepository();
+        }
+
+        return MaterialApp(
       title: 'Flutter Demo',
       onGenerateRoute: (settings) {
         // Centralized route guard: require auth for /psy_dashboard
