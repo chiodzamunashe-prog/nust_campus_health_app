@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'psychiatrist_dashboard/dashboard_screen.dart';
+import 'auth/login_screen.dart';
+import 'auth/auth_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,6 +17,12 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       routes: {
         '/psy_dashboard': (context) => const PsychiatristDashboardScreen(),
+        '/login': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          String? redirect;
+          if (args is String) redirect = args;
+          return LoginScreen(redirectTo: redirect);
+        },
       },
       theme: ThemeData(
         // This is the theme of your application.
@@ -97,12 +105,39 @@ class _MyHomePageState extends State<MyHomePage> {
               decoration: BoxDecoration(color: Colors.blue),
               child: Text('NUST Campus Health', style: TextStyle(color: Colors.white, fontSize: 18)),
             ),
-            ListTile(
-              leading: const Icon(Icons.medical_services),
-              title: const Text('Psychiatrist Dashboard'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/psy_dashboard');
+            ValueListenableBuilder<bool>(
+              valueListenable: AuthService.instance.isLoggedIn,
+              builder: (context, loggedIn, _) {
+                return ListTile(
+                  leading: const Icon(Icons.medical_services),
+                  title: const Text('Psychiatrist Dashboard'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (loggedIn) {
+                      Navigator.pushNamed(context, '/psy_dashboard');
+                    } else {
+                      Navigator.pushNamed(context, '/login', arguments: '/psy_dashboard');
+                    }
+                  },
+                );
+              },
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: AuthService.instance.isLoggedIn,
+              builder: (context, loggedIn, _) {
+                return ListTile(
+                  leading: Icon(loggedIn ? Icons.logout : Icons.login),
+                  title: Text(loggedIn ? 'Logout' : 'Login'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    if (loggedIn) {
+                      await AuthService.instance.logout();
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out')));
+                    } else {
+                      Navigator.pushNamed(context, '/login');
+                    }
+                  },
+                );
               },
             ),
           ],
