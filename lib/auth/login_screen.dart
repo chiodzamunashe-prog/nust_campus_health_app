@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       setState(() {
-        _error = 'Invalid credentials (try user: psy / pass: password)';
+        _error = 'Invalid credentials (try user: psy / pass: password) or check Firebase credentials';
       });
     }
   }

@@ -30,6 +30,13 @@ class MyApp extends StatelessWidget {
           initMockRepository();
         }
 
+        // Initialize auth service (Firebase-aware). Safe to call multiple times.
+        try {
+          AuthService.instance.init();
+        } catch (_) {
+          // ignore
+        }
+
         return MaterialApp(
       title: 'Flutter Demo',
       onGenerateRoute: (settings) {
