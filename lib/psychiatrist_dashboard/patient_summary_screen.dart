@@ -24,7 +24,9 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
   }
 
   Future<void> _refreshNotes() async {
-    setState(() => _notesFuture = MockService.fetchNotesByAppointment(widget.appointmentId));
+    setState(() {
+      _notesFuture = MockService.fetchNotesByAppointment(widget.appointmentId);
+    });
   }
 
   @override

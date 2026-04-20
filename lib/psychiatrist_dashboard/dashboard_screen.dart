@@ -64,14 +64,22 @@ class _PsychiatristDashboardScreenState extends State<PsychiatristDashboardScree
                               TextButton(
                                 onPressed: () async {
                                   final ok = await MockService.updateAppointmentStatus(appt.id, 'confirmed');
-                                  if (ok) setState(() => _appointmentsFuture = MockService.fetchAppointments());
+                                  if (ok) {
+                                    setState(() {
+                                      _appointmentsFuture = MockService.fetchAppointments();
+                                    });
+                                  }
                                 },
                                 child: const Text('Accept'),
                               ),
                               TextButton(
                                 onPressed: () async {
                                   final ok = await MockService.updateAppointmentStatus(appt.id, 'declined');
-                                  if (ok) setState(() => _appointmentsFuture = MockService.fetchAppointments());
+                                  if (ok) {
+                                    setState(() {
+                                      _appointmentsFuture = MockService.fetchAppointments();
+                                    });
+                                  }
                                 },
                                 child: const Text('Decline', style: TextStyle(color: Colors.redAccent)),
                               ),
