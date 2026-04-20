@@ -14,38 +14,33 @@ class MockService {
   static final List<Note> _notes = [];
 
   static Future<List<Appointment>> fetchAppointments() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return List<Appointment>.from(_appointments);
+    return Future.value(List<Appointment>.from(_appointments));
   }
 
   static Future<Patient?> getPatientById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 200));
     try {
-      return _patients.firstWhere((p) => p.id == id);
+      return Future.value(_patients.firstWhere((p) => p.id == id));
     } catch (_) {
-      return null;
+      return Future.value(null);
     }
   }
 
   // Update appointment status (e.g., accept, decline, confirmed, completed)
   static Future<bool> updateAppointmentStatus(String appointmentId, String status) async {
-    await Future.delayed(const Duration(milliseconds: 200));
     final idx = _appointments.indexWhere((a) => a.id == appointmentId);
-    if (idx == -1) return false;
+    if (idx == -1) return Future.value(false);
     _appointments[idx] = Appointment(id: _appointments[idx].id, patientId: _appointments[idx].patientId, time: _appointments[idx].time, status: status);
-    return true;
+    return Future.value(true);
   }
 
   // Notes
   static Future<List<Note>> fetchNotesByAppointment(String appointmentId) async {
-    await Future.delayed(const Duration(milliseconds: 150));
-    return _notes.where((n) => n.appointmentId == appointmentId).toList();
+    return Future.value(_notes.where((n) => n.appointmentId == appointmentId).toList());
   }
 
   static Future<Note> addNote(String appointmentId, String text) async {
-    await Future.delayed(const Duration(milliseconds: 150));
     final note = Note(id: 'n${_notes.length + 1}', appointmentId: appointmentId, text: text, createdAt: DateTime.now());
     _notes.add(note);
-    return note;
+    return Future.value(note);
   }
 }
