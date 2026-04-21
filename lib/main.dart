@@ -40,40 +40,51 @@ class MyApp extends StatelessWidget {
         }
 
         return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      onGenerateRoute: (settings) {
-        // Centralized route guard: require auth for /psy_dashboard
-        if (settings.name == '/psy_dashboard') {
-          if (AuthService.instance.isLoggedIn.value) {
-            return MaterialPageRoute(builder: (_) => const PsychiatristDashboardScreen(), settings: settings);
-          } else {
-            return MaterialPageRoute(builder: (_) => LoginScreen(redirectTo: '/psy_dashboard'), settings: settings);
-          }
-        }
+          debugShowCheckedModeBanner: false,
+          title: 'Flutter Demo',
+          onGenerateRoute: (settings) {
+            // Centralized route guard: require auth for /psy_dashboard
+            if (settings.name == '/psy_dashboard') {
+              if (AuthService.instance.isLoggedIn.value) {
+                return MaterialPageRoute(
+                  builder: (_) => const PsychiatristDashboardScreen(),
+                  settings: settings,
+                );
+              } else {
+                return MaterialPageRoute(
+                  builder: (_) => LoginScreen(redirectTo: '/psy_dashboard'),
+                  settings: settings,
+                );
+              }
+            }
 
-        if (settings.name == '/login') {
-          final args = settings.arguments;
-          String? redirect;
-          if (args is String) redirect = args;
-          return MaterialPageRoute(builder: (_) => LoginScreen(redirectTo: redirect), settings: settings);
-        }
+            if (settings.name == '/login') {
+              final args = settings.arguments;
+              String? redirect;
+              if (args is String) redirect = args;
+              return MaterialPageRoute(
+                builder: (_) => LoginScreen(redirectTo: redirect),
+                settings: settings,
+              );
+            }
 
-        // fallback to home
-        return MaterialPageRoute(builder: (_) => const HomeScreen(), settings: settings);
-      },
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF003366),
-          primary: const Color(0xFF003366),
-          secondary: const Color(0xFFFFB81C),
-        ),
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
-    );
+            // fallback to home
+            return MaterialPageRoute(
+              builder: (_) => const HomeScreen(),
+              settings: settings,
+            );
+          },
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF003366),
+              primary: const Color(0xFF003366),
+              secondary: const Color(0xFFFFB81C),
+            ),
+            useMaterial3: true,
+          ),
+          home: const HomeScreen(),
+        );
       },
     );
   }
 }
-

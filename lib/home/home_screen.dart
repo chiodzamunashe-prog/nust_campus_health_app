@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_service.dart';
+import 'package:nust_campus_health_app/profile/profile_page.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,7 +20,12 @@ class HomeScreen extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.person_outline),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfilePage()),
+              );
+            },
           ),
         ],
       ),
@@ -92,7 +98,11 @@ class HomeScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today, color: Color(0xFFFFB81C), size: 20), // NUST Gold
+                const Icon(
+                  Icons.calendar_today,
+                  color: Color(0xFFFFB81C),
+                  size: 20,
+                ), // NUST Gold
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -104,7 +114,10 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const Text(
                         'Dr. Smith - Today, 2:00 PM',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -136,7 +149,11 @@ class HomeScreen extends StatelessWidget {
                 color: Colors.red.shade100,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.emergency, color: Colors.red.shade700, size: 28),
+              child: Icon(
+                Icons.emergency,
+                color: Colors.red.shade700,
+                size: 28,
+              ),
             ),
             const SizedBox(width: 16),
             const Expanded(
@@ -166,7 +183,10 @@ class HomeScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Call Now'),
             ),
@@ -229,7 +249,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard(BuildContext context, String title, IconData icon, Color color) {
+  Widget _buildActionCard(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       width: 110,
       margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -281,10 +306,7 @@ class HomeScreen extends StatelessWidget {
                   color: Colors.black87,
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: const Text('See All'),
-              ),
+              TextButton(onPressed: () {}, child: const Text('See All')),
             ],
           ),
         ),
@@ -351,7 +373,10 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -377,14 +402,21 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF003366), // NUST Blue
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFFFB81C).withOpacity(0.3), width: 1),
+          border: Border.all(
+            color: const Color(0xFFFFB81C).withOpacity(0.3),
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.lightbulb_outline, color: Color(0xFFFFB81C), size: 24), // NUST Gold
+                Icon(
+                  Icons.lightbulb_outline,
+                  color: Color(0xFFFFB81C),
+                  size: 24,
+                ), // NUST Gold
                 SizedBox(width: 12),
                 Text(
                   'Daily Health Tip',
@@ -399,10 +431,7 @@ class HomeScreen extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               'Drink at least 8 glasses of water today to stay hydrated and maintain focus during lectures.',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.5,
-              ).whiteb2,
+              style: TextStyle(fontSize: 15, height: 1.5).whiteb2,
             ),
           ],
         ),
@@ -416,7 +445,9 @@ class HomeScreen extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFF003366)), // NUST Blue
+            decoration: const BoxDecoration(
+              color: Color(0xFF003366),
+            ), // NUST Blue
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -428,7 +459,11 @@ class HomeScreen extends StatelessWidget {
                 SizedBox(height: 12),
                 Text(
                   'NUST Campus Health',
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   'Student Portal',
@@ -448,7 +483,11 @@ class HomeScreen extends StatelessWidget {
                   if (loggedIn) {
                     Navigator.pushNamed(context, '/psy_dashboard');
                   } else {
-                    Navigator.pushNamed(context, '/login', arguments: '/psy_dashboard');
+                    Navigator.pushNamed(
+                      context,
+                      '/login',
+                      arguments: '/psy_dashboard',
+                    );
                   }
                 },
               );
@@ -466,7 +505,9 @@ class HomeScreen extends StatelessWidget {
                   if (loggedIn) {
                     await AuthService.instance.logout();
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Logged out')),
+                      );
                     }
                   } else {
                     Navigator.pushNamed(context, '/login');
@@ -482,5 +523,5 @@ class HomeScreen extends StatelessWidget {
 }
 
 extension on TextStyle {
-  get whiteb2 => copyWith(color: Colors.white.withOpacity(0.85));
+  TextStyle get whiteb2 => copyWith(color: Colors.white.withOpacity(0.85));
 }
