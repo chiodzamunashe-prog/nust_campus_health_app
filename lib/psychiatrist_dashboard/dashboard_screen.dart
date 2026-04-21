@@ -71,12 +71,23 @@ class _PsychiatristDashboardScreenState
                           child: FilterChip(
                             label: Text(
                               status[0].toUpperCase() + status.substring(1),
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black87,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
                             ),
                             selected: isSelected,
                             onSelected: (val) =>
                                 setState(() => _filterStatus = status),
-                            selectedColor: Colors.deepPurple[100],
-                            checkmarkColor: Colors.deepPurple,
+                            selectedColor: const Color(0xFF003366),
+                            checkmarkColor: Colors.white,
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isSelected ? Colors.transparent : Colors.grey[300]!,
+                              ),
+                            ),
                           ),
                         );
                       }).toList(),
@@ -169,6 +180,18 @@ class _PsychiatristDashboardScreenState
                                 child: const Text(
                                   'Decline',
                                   style: TextStyle(color: Colors.redAccent),
+                                ),
+                              ),
+                            ] else if (appt.status == 'confirmed') ...[
+                              TextButton(
+                                onPressed: () =>
+                                    repository.updateAppointmentStatus(
+                                      appt.id,
+                                      'completed',
+                                    ),
+                                child: const Text(
+                                  'Mark Completed',
+                                  style: TextStyle(color: Colors.green),
                                 ),
                               ),
                             ],

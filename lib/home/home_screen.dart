@@ -472,6 +472,20 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
+          ValueListenableBuilder<UserRole>(
+            valueListenable: AuthService.instance.userRole,
+            builder: (context, role, _) {
+              if (role != UserRole.admin) return const SizedBox.shrink();
+              return ListTile(
+                leading: const Icon(Icons.admin_panel_settings),
+                title: const Text('Admin Panel'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/admin');
+                },
+              );
+            },
+          ),
           ValueListenableBuilder<bool>(
             valueListenable: AuthService.instance.isLoggedIn,
             builder: (context, loggedIn, _) {

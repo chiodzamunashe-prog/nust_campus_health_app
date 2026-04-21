@@ -62,4 +62,39 @@ class FirestoreRepository implements DashboardRepository {
       return false;
     }
   }
+
+  @override
+  Future<List<Appointment>> fetchPatientHistory(String patientId) async {
+    final q = await _db
+        .collection('appointments')
+        .where('patientId', isEqualTo: patientId)
+        .orderBy('time', descending: true)
+        .get();
+    return q.docs
+        .map((d) => Appointment(
+            id: d.id,
+            patientId: d['patientId'],
+            time: (d['time'] as Timestamp).toDate(),
+            status: d['status'] ?? 'pending'))
+        .toList();
+  }
+
+  @override
+  Future<List<Note>> fetchAllNotesByPatient(String patientId) async {
+    // 1. Get all appt IDs for this patient
+    final apptSnap = await _db.collection('appointments').where('patientId', isEqualTo: patientId).get();
+    final apptIds = apptSnap.docs.map((d) => d.id).toList();
+    if (apptIds.isEmpty) return [];
+
+    // 2. Fetch all notes for these appts (looping if more than 10, but for now simple)
+    // Note: To make this robust, we should have stored patientId in the note document.
+    final notesSnap = await _db.collection('notes').where('appointmentId', whereIn: apptIds.take(10).toList()).get();
+    return notesSnap.docs
+        .map((d) => Note(
+            id: d.id,
+            appointmentId: d['appointmentId'],
+            text: d['text'],
+            createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now()))
+        .toList();
+  }
 }

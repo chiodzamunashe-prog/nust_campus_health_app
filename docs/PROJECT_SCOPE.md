@@ -24,7 +24,7 @@ The table below outlines all planned modules. Each module can be developed indep
 | 5 | **Health Records** | 🔴 Not Started | Secure storage and retrieval of student medical history / visit records |
 | 6 | **Notifications & Reminders** | 🟡 In Progress | Push notifications for upcoming appointments, medication reminders |
 | 7 | **Chat / Messaging** | 🔴 Not Started | Real-time messaging between students and healthcare providers |
-| 8 | **Admin Panel** | 🔴 Not Started | Admin users manage staff accounts, view analytics, system settings |
+| 8 | **Admin Panel** | ✅ Completed | Admin users manage staff accounts, view analytics, system settings |
 | 9 | **Authentication & User Management** | 🟡 In Progress | Login, registration, role-based access (student, psychiatrist, GP, admin) |
 | 10 | **Profile Management** | 🟡 In Progress | Users view/edit profile, upload photo, manage privacy settings |
 

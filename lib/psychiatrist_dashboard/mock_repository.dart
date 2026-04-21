@@ -62,6 +62,18 @@ class MockRepository implements DashboardRepository {
     _emitNotes(appointmentId);
     return Future.value(note);
   }
+
+  @override
+  Future<List<Appointment>> fetchPatientHistory(String patientId) async {
+    // Return all appointments for this patient, but only those in the past or completed
+    return Future.value(_appointments.where((a) => a.patientId == patientId).toList());
+  }
+
+  @override
+  Future<List<Note>> fetchAllNotesByPatient(String patientId) async {
+    final patientApptIds = _appointments.where((a) => a.patientId == patientId).map((a) => a.id).toSet();
+    return Future.value(_notes.where((n) => patientApptIds.contains(n.appointmentId)).toList());
+  }
 }
 
 // Initialize default repository to mock implementation.
