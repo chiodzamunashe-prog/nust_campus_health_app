@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'models.dart';
 import 'repository.dart';
+import '../models/prescription_model.dart';
 
 class MockRepository implements DashboardRepository {
   final List<Patient> _patients = [
@@ -14,9 +15,11 @@ class MockRepository implements DashboardRepository {
   ];
 
   final List<Note> _notes = [];
+  final List<Prescription> _prescriptions = [];
 
   final _appointmentStream = StreamController<List<Appointment>>.broadcast();
   final _notesStream = StreamController<List<Note>>.broadcast();
+  final _prescriptionStream = StreamController<List<Prescription>>.broadcast();
 
   MockRepository() {
     _emitAppointments();
@@ -24,11 +27,22 @@ class MockRepository implements DashboardRepository {
 
   void _emitAppointments() => _appointmentStream.add(List<Appointment>.from(_appointments));
   void _emitNotes(String appointmentId) => _notesStream.add(_notes.where((n) => n.appointmentId == appointmentId).toList());
+  void _emitPrescriptions() => _prescriptionStream.add(List<Prescription>.from(_prescriptions));
 
   @override
   Stream<List<Appointment>> fetchAppointments() {
     Timer.run(() => _emitAppointments());
     return _appointmentStream.stream;
+  }
+
+  @override
+  Stream<List<Appointment>> fetchAppointmentsForDay(DateTime day) {
+    Timer.run(() => _emitAppointments());
+    return _appointmentStream.stream.map((list) {
+      return list.where((a) {
+        return a.time.year == day.year && a.time.month == day.month && a.time.day == day.day;
+      }).toList();
+    });
   }
 
   @override
@@ -64,6 +78,30 @@ class MockRepository implements DashboardRepository {
   }
 
   @override
+  Future<bool> updateNote(String noteId, String newText) async {
+    final index = _notes.indexWhere((n) => n.id == noteId);
+    if (index != -1) {
+      final oldNote = _notes[index];
+      _notes[index] = Note(id: noteId, appointmentId: oldNote.appointmentId, text: newText, createdAt: oldNote.createdAt);
+      _emitNotes(oldNote.appointmentId);
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  Future<bool> deleteNote(String noteId) async {
+    final index = _notes.indexWhere((n) => n.id == noteId);
+    if (index != -1) {
+      final apptId = _notes[index].appointmentId;
+      _notes.removeAt(index);
+      _emitNotes(apptId);
+      return true;
+    }
+    return false;
+  }
+
+  @override
   Future<List<Appointment>> fetchPatientHistory(String patientId) async {
     // Return all appointments for this patient, but only those in the past or completed
     return Future.value(_appointments.where((a) => a.patientId == patientId).toList());
@@ -71,8 +109,63 @@ class MockRepository implements DashboardRepository {
 
   @override
   Future<List<Note>> fetchAllNotesByPatient(String patientId) async {
-    final patientApptIds = _appointments.where((a) => a.patientId == patientId).map((a) => a.id).toSet();
-    return Future.value(_notes.where((n) => patientApptIds.contains(n.appointmentId)).toList());
+    return _notes.where((n) => _appointments.any((a) => a.id == n.appointmentId && a.patientId == patientId)).toList();
+  }
+
+  // Student Booking Methods
+  @override
+  Future<bool> createAppointment(Appointment appointment) async {
+    _appointments.add(appointment);
+    _emitAppointments();
+    return true;
+  }
+
+  @override
+  Stream<List<Appointment>> fetchAppointmentsForStudent(String patientId) {
+    return _appointmentStream.stream.map((list) {
+      return list.where((a) => a.patientId == patientId).toList();
+    });
+  }
+
+  @override
+  Future<List<DateTime>> fetchAvailableSlots(DateTime day) async {
+    // Generate slots: 09:00 to 16:00, 30 min intervals
+    List<DateTime> slots = [];
+    DateTime start = DateTime(day.year, day.month, day.day, 9, 0);
+    DateTime end = DateTime(day.year, day.month, day.day, 16, 0);
+
+    while (start.isBefore(end)) {
+      // Check if already booked
+      final isBooked = _appointments.any((a) => 
+        a.time.year == start.year && 
+        a.time.month == start.month && 
+        a.time.day == start.day &&
+        a.time.hour == start.hour &&
+        a.time.minute == start.minute
+      );
+      
+      if (!isBooked) {
+        slots.add(start);
+      }
+      start = start.add(const Duration(minutes: 30));
+    }
+    return slots;
+  }
+
+  // Prescription Methods
+  @override
+  Future<bool> addPrescription(Prescription prescription) async {
+    _prescriptions.add(prescription);
+    _emitPrescriptions();
+    return true;
+  }
+
+  @override
+  Stream<List<Prescription>> fetchPrescriptionsForPatient(String patientId) {
+    Timer.run(() => _emitPrescriptions());
+    return _prescriptionStream.stream.map((list) {
+      return list.where((p) => p.patientId == patientId).toList();
+    });
   }
 }
 

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Patient {
   final String id;
   final String name;
@@ -15,6 +17,16 @@ class Appointment {
   final String status; // e.g., pending, confirmed, completed
 
   Appointment({required this.id, required this.patientId, required this.time, this.status = 'pending'});
+
+  factory Appointment.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Appointment(
+      id: doc.id,
+      patientId: data['patientId'] ?? '',
+      time: (data['time'] as Timestamp).toDate(),
+      status: data['status'] ?? 'pending',
+    );
+  }
 }
 
 class Note {

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'models.dart';
 import 'repository.dart';
+import '../models/prescription_model.dart';
 
 class FirestoreRepository implements DashboardRepository {
   final FirebaseFirestore _db;
@@ -14,8 +15,27 @@ class FirestoreRepository implements DashboardRepository {
       'text': text,
       'createdAt': FieldValue.serverTimestamp(),
     });
-    final snap = await doc.get();
     return Note(id: doc.id, appointmentId: appointmentId, text: text, createdAt: DateTime.now());
+  }
+
+  @override
+  Future<bool> updateNote(String noteId, String newText) async {
+    try {
+      await _db.collection('notes').doc(noteId).update({'text': newText});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> deleteNote(String noteId) async {
+    try {
+      await _db.collection('notes').doc(noteId).delete();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
@@ -44,13 +64,24 @@ class FirestoreRepository implements DashboardRepository {
 
   @override
   Stream<List<Appointment>> fetchAppointments() {
-    return _db.collection('appointments').orderBy('time').snapshots().map((q) => q.docs
-        .map((d) => Appointment(
-            id: d.id,
-            patientId: d['patientId'],
-            time: (d['time'] as Timestamp).toDate(),
-            status: d['status'] ?? 'pending'))
-        .toList());
+    return _db.collection('appointments').snapshots().map((snapshot) {
+      return snapshot.docs.map<Appointment>((doc) => Appointment.fromFirestore(doc)).toList();
+    });
+  }
+
+  @override
+  Stream<List<Appointment>> fetchAppointmentsForDay(DateTime day) {
+    final startOfDay = DateTime(day.year, day.month, day.day);
+    final endOfDay = DateTime(day.year, day.month, day.day, 23, 59, 59);
+
+    return _db
+        .collection('appointments')
+        .where('time', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .where('time', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map<Appointment>((doc) => Appointment.fromFirestore(doc)).toList();
+    });
   }
 
   @override
@@ -81,20 +112,81 @@ class FirestoreRepository implements DashboardRepository {
 
   @override
   Future<List<Note>> fetchAllNotesByPatient(String patientId) async {
-    // 1. Get all appt IDs for this patient
-    final apptSnap = await _db.collection('appointments').where('patientId', isEqualTo: patientId).get();
-    final apptIds = apptSnap.docs.map((d) => d.id).toList();
-    if (apptIds.isEmpty) return [];
+    final appointments = await _db.collection('appointments').where('patientId', isEqualTo: patientId).get();
+    if (appointments.docs.isEmpty) return [];
+    
+    final apptIds = appointments.docs.map((d) => d.id).toList();
+    final notes = await _db.collection('notes').get();
+    return notes.docs
+      .where((d) => apptIds.contains(d['appointmentId']))
+      .map((d) => Note(
+        id: d.id,
+        appointmentId: d['appointmentId'],
+        text: d['text'],
+        createdAt: (d['createdAt'] as Timestamp).toDate(),
+      )).toList();
+  }
 
-    // 2. Fetch all notes for these appts (looping if more than 10, but for now simple)
-    // Note: To make this robust, we should have stored patientId in the note document.
-    final notesSnap = await _db.collection('notes').where('appointmentId', whereIn: apptIds.take(10).toList()).get();
-    return notesSnap.docs
-        .map((d) => Note(
-            id: d.id,
-            appointmentId: d['appointmentId'],
-            text: d['text'],
-            createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now()))
-        .toList();
+  @override
+  Future<bool> createAppointment(Appointment appointment) async {
+    await _db.collection('appointments').add({
+      'patientId': appointment.patientId,
+      'time': Timestamp.fromDate(appointment.time),
+      'status': appointment.status,
+    });
+    return true;
+  }
+
+  @override
+  Stream<List<Appointment>> fetchAppointmentsForStudent(String patientId) {
+    return _db
+        .collection('appointments')
+        .where('patientId', isEqualTo: patientId)
+        .snapshots()
+        .map((s) => s.docs.map<Appointment>((d) => Appointment.fromFirestore(d)).toList());
+  }
+
+  @override
+  Future<List<DateTime>> fetchAvailableSlots(DateTime day) async {
+    final start = DateTime(day.year, day.month, day.day, 0, 0);
+    final end = DateTime(day.year, day.month, day.day, 23, 59, 59);
+
+    final snapshot = await _db
+        .collection('appointments')
+        .where('time', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('time', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .get();
+
+    final bookedTimes = snapshot.docs.map((d) => (d['time'] as Timestamp).toDate()).toList();
+
+    List<DateTime> slots = [];
+    DateTime current = DateTime(day.year, day.month, day.day, 9, 0);
+    DateTime limit = DateTime(day.year, day.month, day.day, 16, 0);
+
+    while (current.isBefore(limit)) {
+      final isBooked = bookedTimes.any((bt) => 
+        bt.hour == current.hour && bt.minute == current.minute
+      );
+      if (!isBooked) slots.add(current);
+      current = current.add(const Duration(minutes: 30));
+    }
+    return slots;
+  }
+
+  // Prescription Methods
+  @override
+  Future<bool> addPrescription(Prescription prescription) async {
+    await _db.collection('prescriptions').add(prescription.toMap());
+    return true;
+  }
+
+  @override
+  Stream<List<Prescription>> fetchPrescriptionsForPatient(String patientId) {
+    return _db
+        .collection('prescriptions')
+        .where('patientId', isEqualTo: patientId)
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => Prescription.fromFirestore(d)).toList());
   }
 }

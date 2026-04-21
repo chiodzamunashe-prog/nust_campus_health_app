@@ -47,6 +47,17 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
               }
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.medication),
+            tooltip: 'Issue Prescription',
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                '/prescription_form',
+                arguments: widget.patient,
+              );
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -120,6 +131,35 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
                 title: Text(n.text),
                 subtitle: Text(n.createdAt.toLocal().toString()),
                 contentPadding: EdgeInsets.zero,
+                trailing: PopupMenuButton<String>(
+                  onSelected: (value) async {
+                    if (value == 'delete') {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Delete Note'),
+                          content: const Text('Are you sure you want to delete this note?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                            Theme(
+                              data: Theme.of(ctx).copyWith(colorScheme: ColorScheme.fromSeed(seedColor: Colors.red, primary: Colors.red)),
+                              child: ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await repository.deleteNote(n.id);
+                      }
+                    } else if (value == 'edit') {
+                      _showEditNoteDialog(n);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18), SizedBox(width: 8), Text('Edit')])),
+                    const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
+                  ],
+                ),
               )).toList(),
             );
           },
@@ -190,6 +230,34 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
           },
         ),
       ],
+    );
+  }
+
+  void _showEditNoteDialog(Note note) {
+    final ctrl = TextEditingController(text: note.text);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Note'),
+        content: TextField(
+          controller: ctrl,
+          maxLines: 5,
+          decoration: const InputDecoration(hintText: 'Enter updated note...'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              final newText = ctrl.text.trim();
+              if (newText.isNotEmpty) {
+                await repository.updateNote(note.id, newText);
+                if (mounted) Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Update'),
+          ),
+        ],
+      ),
     );
   }
 

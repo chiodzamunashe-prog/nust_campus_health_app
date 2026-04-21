@@ -17,16 +17,16 @@ The table below outlines all planned modules. Each module can be developed indep
 
 | # | Module | Status | Description |
 |---|--------|--------|-------------|
-| 1 | **Psychiatrist Dashboard** | 🟡 In Progress | Dashboard for psychiatrists to manage appointments, view patient info, and write session notes |
-| 2 | **Student Portal / Home** | ✅ Completed | Student-facing home screen with health tips, announcements, quick actions |
-| 3 | **Appointment Booking** | 🔴 Not Started | Students book, reschedule, and cancel appointments with available practitioners |
+| 1 | **Psychiatrist Dashboard** | ✅ Completed | Dashboard for psychiatrists to manage appointments, view patient info, write/edit session notes, and issue prescriptions |
+| 2 | **Student Portal / Home** | ✅ Completed | Student-facing home screen with health tips, announcements, and quick actions |
+| 3 | **Appointment Booking** | ✅ Completed | Students book, track, and manage their own medical sessions via interactive calendar |
 | 4 | **General Practitioner Dashboard** | 🔴 Not Started | Similar to Psychiatrist Dashboard but for GPs — patient queue, prescriptions |
-| 5 | **Health Records** | 🔴 Not Started | Secure storage and retrieval of student medical history / visit records |
-| 6 | **Notifications & Reminders** | 🟡 In Progress | Push notifications for upcoming appointments, medication reminders |
+| 5 | **Health Records** | ✅ Completed | Integrated with summary views and session history |
+| 6 | **Notifications & Reminders** | 🟡 In Progress | Basic status update snackbars implemented; push notifications pending |
 | 7 | **Chat / Messaging** | 🔴 Not Started | Real-time messaging between students and healthcare providers |
-| 8 | **Admin Panel** | ✅ Completed | Admin users manage staff accounts, view analytics, system settings |
-| 9 | **Authentication & User Management** | 🟡 In Progress | Login, registration, role-based access (student, psychiatrist, GP, admin) |
-| 10 | **Profile Management** | 🟡 In Progress | Users view/edit profile, upload photo, manage privacy settings |
+| 8 | **Admin Panel** | ✅ Completed | Admin users manage staff accounts, roles, and view analytics |
+| 9 | **Authentication & User Management** | ✅ Completed | Role-based login (student, admin, psy) with branded NUST theme |
+| 10 | **Profile Management** | ✅ Completed | Basic profile viewing implemented |
 
 ---
 
