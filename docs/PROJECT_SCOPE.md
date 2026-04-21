@@ -22,7 +22,7 @@ The table below outlines all planned modules. Each module can be developed indep
 | 3 | **Appointment Booking** | 🔴 Not Started | Students book, reschedule, and cancel appointments with available practitioners |
 | 4 | **General Practitioner Dashboard** | 🔴 Not Started | Similar to Psychiatrist Dashboard but for GPs — patient queue, prescriptions |
 | 5 | **Health Records** | 🔴 Not Started | Secure storage and retrieval of student medical history / visit records |
-| 6 | **Notifications & Reminders** | 🔴 Not Started | Push notifications for upcoming appointments, medication reminders |
+| 6 | **Notifications & Reminders** | 🟡 In Progress | Push notifications for upcoming appointments, medication reminders |
 | 7 | **Chat / Messaging** | 🔴 Not Started | Real-time messaging between students and healthcare providers |
 | 8 | **Admin Panel** | 🔴 Not Started | Admin users manage staff accounts, view analytics, system settings |
 | 9 | **Authentication & User Management** | 🟡 In Progress | Login, registration, role-based access (student, psychiatrist, GP, admin) |
