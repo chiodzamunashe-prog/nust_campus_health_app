@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
 import 'repository.dart';
-import 'mock_repository.dart';
 
 
 class PatientSummaryScreen extends StatefulWidget {
@@ -16,19 +15,12 @@ class PatientSummaryScreen extends StatefulWidget {
 
 class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
   final TextEditingController _noteCtrl = TextEditingController();
-  late Future<List<Note>> _notesFuture;
+  late Stream<List<Note>> _notesStream;
 
   @override
   void initState() {
     super.initState();
-    initMockRepository();
-    _notesFuture = repository.fetchNotesByAppointment(widget.appointmentId);
-  }
-
-  Future<void> _refreshNotes() async {
-    setState(() {
-      _notesFuture = MockService.fetchNotesByAppointment(widget.appointmentId);
-    });
+    _notesStream = repository.fetchNotesStream(widget.appointmentId);
   }
 
   @override
@@ -57,9 +49,8 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
                 onPressed: () async {
                   final text = _noteCtrl.text.trim();
                   if (text.isEmpty) return;
-                  await MockService.addNote(widget.appointmentId, text);
+                  await repository.addNote(widget.appointmentId, text);
                   _noteCtrl.clear();
-                  await _refreshNotes();
                 },
                 child: const Text('Save'),
               )
@@ -68,8 +59,8 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
             const Text('Notes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Expanded(
-              child: FutureBuilder<List<Note>>(
-                future: _notesFuture,
+              child: StreamBuilder<List<Note>>(
+                stream: _notesStream,
                 builder: (context, snap) {
                   if (snap.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
                   final notes = snap.data ?? [];

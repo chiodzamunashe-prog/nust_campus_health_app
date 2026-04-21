@@ -18,7 +18,7 @@ The table below outlines all planned modules. Each module can be developed indep
 | # | Module | Status | Description |
 |---|--------|--------|-------------|
 | 1 | **Psychiatrist Dashboard** | 🟡 In Progress | Dashboard for psychiatrists to manage appointments, view patient info, and write session notes |
-| 2 | **Student Portal / Home** | 🔴 Not Started | Student-facing home screen with health tips, announcements, quick actions |
+| 2 | **Student Portal / Home** | ✅ Completed | Student-facing home screen with health tips, announcements, quick actions |
 | 3 | **Appointment Booking** | 🔴 Not Started | Students book, reschedule, and cancel appointments with available practitioners |
 | 4 | **General Practitioner Dashboard** | 🔴 Not Started | Similar to Psychiatrist Dashboard but for GPs — patient queue, prescriptions |
 | 5 | **Health Records** | 🔴 Not Started | Secure storage and retrieval of student medical history / visit records |

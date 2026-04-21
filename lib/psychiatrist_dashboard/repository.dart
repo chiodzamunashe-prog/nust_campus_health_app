@@ -1,10 +1,10 @@
 import 'models.dart';
 
 abstract class DashboardRepository {
-  Future<List<Appointment>> fetchAppointments();
+  Stream<List<Appointment>> fetchAppointments();
   Future<Patient?> getPatientById(String id);
   Future<bool> updateAppointmentStatus(String appointmentId, String status);
-  Future<List<Note>> fetchNotesByAppointment(String appointmentId);
+  Stream<List<Note>> fetchNotesStream(String appointmentId);
   Future<Note> addNote(String appointmentId, String text);
 }
 

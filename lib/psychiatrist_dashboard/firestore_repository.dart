@@ -27,15 +27,30 @@ class FirestoreRepository implements DashboardRepository {
   }
 
   @override
-  Future<List<Note>> fetchNotesByAppointment(String appointmentId) async {
-    final q = await _db.collection('notes').where('appointmentId', isEqualTo: appointmentId).orderBy('createdAt', descending: false).get();
-    return q.docs.map((d) => Note(id: d.id, appointmentId: d['appointmentId'], text: d['text'], createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now())).toList();
+  Stream<List<Note>> fetchNotesStream(String appointmentId) {
+    return _db
+        .collection('notes')
+        .where('appointmentId', isEqualTo: appointmentId)
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map((q) => q.docs
+            .map((d) => Note(
+                id: d.id,
+                appointmentId: d['appointmentId'],
+                text: d['text'],
+                createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now()))
+            .toList());
   }
 
   @override
-  Future<List<Appointment>> fetchAppointments() async {
-    final q = await _db.collection('appointments').orderBy('time').get();
-    return q.docs.map((d) => Appointment(id: d.id, patientId: d['patientId'], time: (d['time'] as Timestamp).toDate(), status: d['status'] ?? 'pending')).toList();
+  Stream<List<Appointment>> fetchAppointments() {
+    return _db.collection('appointments').orderBy('time').snapshots().map((q) => q.docs
+        .map((d) => Appointment(
+            id: d.id,
+            patientId: d['patientId'],
+            time: (d['time'] as Timestamp).toDate(),
+            status: d['status'] ?? 'pending'))
+        .toList());
   }
 
   @override
