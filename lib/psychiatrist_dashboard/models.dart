@@ -34,6 +34,57 @@ class Note {
   final String appointmentId;
   final String text;
   final DateTime createdAt;
+  final String type; // 'psychiatry', 'general'
 
-  Note({required this.id, required this.appointmentId, required this.text, required this.createdAt});
+  Note({
+    required this.id,
+    required this.appointmentId,
+    required this.text,
+    required this.createdAt,
+    this.type = 'general',
+  });
+}
+
+class Vitals {
+  final String id;
+  final String patientId;
+  final String bloodPressure;
+  final double temperature;
+  final int heartRate;
+  final double weight;
+  final DateTime recordedAt;
+
+  Vitals({
+    required this.id,
+    required this.patientId,
+    required this.bloodPressure,
+    required this.temperature,
+    required this.heartRate,
+    required this.weight,
+    required this.recordedAt,
+  });
+
+  factory Vitals.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Vitals(
+      id: doc.id,
+      patientId: data['patientId'] ?? '',
+      bloodPressure: data['bloodPressure'] ?? '',
+      temperature: (data['temperature'] ?? 0.0).toDouble(),
+      heartRate: data['heartRate'] ?? 0,
+      weight: (data['weight'] ?? 0.0).toDouble(),
+      recordedAt: (data['recordedAt'] as Timestamp).toDate(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'patientId': patientId,
+      'bloodPressure': bloodPressure,
+      'temperature': temperature,
+      'heartRate': heartRate,
+      'weight': weight,
+      'recordedAt': Timestamp.fromDate(recordedAt),
+    };
+  }
 }

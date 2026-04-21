@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
 import 'repository.dart';
+import '../lab_module/models.dart';
+import '../auth/auth_service.dart';
 
 class PatientSummaryScreen extends StatefulWidget {
   final Patient patient;
@@ -21,6 +23,7 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
   late Stream<List<Note>> _notesStream;
   late Future<List<Appointment>> _historyFuture;
   late Future<List<Note>> _allNotesFuture;
+  late Stream<List<LabRequest>> _labStream;
 
   @override
   void initState() {
@@ -28,6 +31,7 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
     _notesStream = repository.fetchNotesStream(widget.appointmentId);
     _historyFuture = repository.fetchPatientHistory(widget.patient.id);
     _allNotesFuture = repository.fetchAllNotesByPatient(widget.patient.id);
+    _labStream = repository.fetchLabRequestsForPatient(widget.patient.id);
   }
 
   @override
@@ -58,6 +62,11 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.biotech),
+            tooltip: 'Order Lab Test',
+            onPressed: () => _showOrderLabDialog(),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -69,6 +78,8 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
               _buildPatientDetails(context),
               const Divider(height: 32),
               _buildCurrentSessionNotes(context),
+              const Divider(height: 48, thickness: 2),
+              _buildLabHistory(context),
               const Divider(height: 48, thickness: 2),
               _buildPatientHistory(context),
             ],
@@ -265,5 +276,76 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
   void dispose() {
     _noteCtrl.dispose();
     super.dispose();
+  }
+
+  Widget _buildLabHistory(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Laboratory Results', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        StreamBuilder<List<LabRequest>>(
+          stream: _labStream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const CircularProgressIndicator();
+            final requests = snapshot.data!;
+            if (requests.isEmpty) return const Text('No lab tests ordered.');
+
+            return Column(
+              children: requests.map((r) {
+                final isCompleted = r.status == 'completed';
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ExpansionTile(
+                    leading: Icon(isCompleted ? Icons.check_circle : Icons.pending, color: isCompleted ? Colors.green : Colors.orange),
+                    title: Text(r.testType),
+                    subtitle: Text('Status: ${r.status}'),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(isCompleted ? r.result : 'Result pending...'),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showOrderLabDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Order Lab Test'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Enter test name...'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              if (controller.text.trim().isEmpty) return;
+              final request = LabRequest(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                patientId: widget.patient.id,
+                patientName: widget.patient.name,
+                doctorName: AuthService.instance.currentUser ?? 'Psychiatrist',
+                testType: controller.text.trim(),
+                orderedAt: DateTime.now(),
+              );
+              await repository.addLabRequest(request);
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('Order'),
+          ),
+        ],
+      ),
+    );
   }
 }

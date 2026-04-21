@@ -2,6 +2,8 @@ import 'dart:async';
 import 'models.dart';
 import 'repository.dart';
 import '../models/prescription_model.dart';
+import '../pharmacist_dashboard/models.dart';
+import '../lab_module/models.dart';
 
 class MockRepository implements DashboardRepository {
   final List<Patient> _patients = [
@@ -16,10 +18,21 @@ class MockRepository implements DashboardRepository {
 
   final List<Note> _notes = [];
   final List<Prescription> _prescriptions = [];
+  final List<Vitals> _vitals = [];
+  final List<Medication> _medications = [
+    Medication(id: 'm1', name: 'Paracetamol', category: 'Painkiller', stock: 500, unit: 'tablets'),
+    Medication(id: 'm2', name: 'Amoxicillin', category: 'Antibiotic', stock: 100, unit: 'capsules'),
+    Medication(id: 'm3', name: 'Cetirizine', category: 'Antihistamine', stock: 200, unit: 'tablets'),
+  ];
+  final List<LabRequest> _labRequests = [];
 
   final _appointmentStream = StreamController<List<Appointment>>.broadcast();
   final _notesStream = StreamController<List<Note>>.broadcast();
   final _prescriptionStream = StreamController<List<Prescription>>.broadcast();
+  final _vitalsStream = StreamController<List<Vitals>>.broadcast();
+  final _medicationStream = StreamController<List<Medication>>.broadcast();
+  final _labRequestStream = StreamController<List<LabRequest>>.broadcast();
+  final _adminStatsStream = StreamController<Map<String, dynamic>>.broadcast();
 
   MockRepository() {
     _emitAppointments();
@@ -28,6 +41,21 @@ class MockRepository implements DashboardRepository {
   void _emitAppointments() => _appointmentStream.add(List<Appointment>.from(_appointments));
   void _emitNotes(String appointmentId) => _notesStream.add(_notes.where((n) => n.appointmentId == appointmentId).toList());
   void _emitPrescriptions() => _prescriptionStream.add(List<Prescription>.from(_prescriptions));
+  void _emitVitals(String patientId) => _vitalsStream.add(_vitals.where((v) => v.patientId == patientId).toList());
+  void _emitMedications() => _medicationStream.add(List<Medication>.from(_medications));
+  void _emitLabRequests() => _labRequestStream.add(List<LabRequest>.from(_labRequests));
+  void _emitAdminStats() {
+    final stats = {
+      'totalAppointments': _appointments.length,
+      'pendingAppointments': _appointments.where((a) => a.status == 'pending').length,
+      'pendingLabs': _labRequests.where((r) => r.status == 'pending').length,
+      'pendingPrescriptions': _prescriptions.where((p) => p.status == 'pending').length,
+      'lowStockMeds': _medications.where((m) => m.stock < 50).length,
+      'appointmentTrends': [12, 18, 15, 22, 19, 25, 21], // Mock trend
+      'mostCommonReason': 'Flu/Cold (34%)',
+    };
+    _adminStatsStream.add(stats);
+  }
 
   @override
   Stream<List<Appointment>> fetchAppointments() {
@@ -166,6 +194,113 @@ class MockRepository implements DashboardRepository {
     return _prescriptionStream.stream.map((list) {
       return list.where((p) => p.patientId == patientId).toList();
     });
+  }
+
+  @override
+  Future<bool> updatePrescriptionStatus(String prescriptionId, String status) async {
+    final idx = _prescriptions.indexWhere((p) => p.id == prescriptionId);
+    if (idx == -1) return false;
+    final old = _prescriptions[idx];
+    _prescriptions[idx] = Prescription(
+      id: old.id,
+      patientId: old.patientId,
+      patientName: old.patientName,
+      doctorName: old.doctorName,
+      medication: old.medication,
+      dosage: old.dosage,
+      instructions: old.instructions,
+      date: old.date,
+      status: status,
+    );
+    _emitPrescriptions();
+    return true;
+  }
+
+  @override
+  Stream<List<Prescription>> fetchAllPrescriptions() {
+    Timer.run(() => _emitPrescriptions());
+    return _prescriptionStream.stream;
+  }
+
+  // Vitals Methods
+  @override
+  Future<bool> addVitals(Vitals vitals) async {
+    _vitals.add(vitals);
+    _emitVitals(vitals.patientId);
+    return true;
+  }
+
+  @override
+  Stream<List<Vitals>> fetchVitals(String patientId) {
+    Timer.run(() => _emitVitals(patientId));
+    return _vitalsStream.stream.where((list) => list.isEmpty || list.first.patientId == patientId);
+  }
+
+  @override
+  Stream<List<Medication>> fetchInventory() {
+    Timer.run(() => _emitMedications());
+    return _medicationStream.stream;
+  }
+
+  @override
+  Future<bool> updateInventoryStock(String medicationId, int newStock) async {
+    final idx = _medications.indexWhere((m) => m.id == medicationId);
+    if (idx == -1) return false;
+    _medications[idx] = Medication(
+      id: medicationId,
+      name: _medications[idx].name,
+      category: _medications[idx].category,
+      stock: newStock,
+      unit: _medications[idx].unit,
+    );
+    _emitMedications();
+    return true;
+  }
+
+  // Lab Methods
+  @override
+  Future<bool> addLabRequest(LabRequest request) async {
+    _labRequests.add(request);
+    _emitLabRequests();
+    return true;
+  }
+
+  @override
+  Stream<List<LabRequest>> fetchLabRequests() {
+    Timer.run(() => _emitLabRequests());
+    return _labRequestStream.stream;
+  }
+
+  @override
+  Future<bool> updateLabResult(String id, String result) async {
+    final idx = _labRequests.indexWhere((r) => r.id == id);
+    if (idx == -1) return false;
+    final old = _labRequests[idx];
+    _labRequests[idx] = LabRequest(
+      id: old.id,
+      patientId: old.patientId,
+      patientName: old.patientName,
+      doctorName: old.doctorName,
+      testType: old.testType,
+      status: 'completed',
+      result: result,
+      orderedAt: old.orderedAt,
+      completedAt: DateTime.now(),
+    );
+    _emitLabRequests();
+    return true;
+  }
+
+  @override
+  Stream<List<LabRequest>> fetchLabRequestsForPatient(String patientId) {
+    Timer.run(() => _emitLabRequests());
+    return _labRequestStream.stream.map((list) => list.where((r) => r.patientId == patientId).toList());
+  }
+
+  @override
+  Stream<Map<String, dynamic>> fetchAdminStats() {
+    Timer.run(() => _emitAdminStats());
+    return _adminStatsStream.stream;
   }
 }
 

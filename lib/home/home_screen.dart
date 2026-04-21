@@ -176,7 +176,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () => Navigator.pushNamed(context, '/emergency_hub'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFB71C1C),
                 foregroundColor: Colors.white,
@@ -507,6 +507,69 @@ class HomeScreen extends StatelessWidget {
                       context,
                       '/login',
                       arguments: '/psy_dashboard',
+                    );
+                  }
+                },
+              );
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: AuthService.instance.isLoggedIn,
+            builder: (context, loggedIn, _) {
+              return ListTile(
+                leading: const Icon(Icons.medical_services_outlined),
+                title: const Text('GP Dashboard'),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (loggedIn) {
+                    Navigator.pushNamed(context, '/gp_dashboard');
+                  } else {
+                    Navigator.pushNamed(
+                      context,
+                      '/login',
+                      arguments: '/gp_dashboard',
+                    );
+                  }
+                },
+              );
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: AuthService.instance.isLoggedIn,
+            builder: (context, loggedIn, _) {
+              return ListTile(
+                leading: const Icon(Icons.biotech),
+                title: const Text('Lab Dashboard'),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (loggedIn) {
+                    Navigator.pushNamed(context, '/lab_dashboard');
+                  } else {
+                    Navigator.pushNamed(
+                      context,
+                      '/login',
+                      arguments: '/lab_dashboard',
+                    );
+                  }
+                },
+              );
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: AuthService.instance.isLoggedIn,
+            builder: (context, loggedIn, _) {
+              return ListTile(
+                leading: const Icon(Icons.medication),
+                title: const Text('Pharmacy Dashboard'),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (loggedIn) {
+                    Navigator.pushNamed(context, '/pharmacist_dashboard');
+                  } else {
+                    Navigator.pushNamed(
+                      context,
+                      '/login',
+                      arguments: '/pharmacist_dashboard',
                     );
                   }
                 },

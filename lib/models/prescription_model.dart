@@ -9,6 +9,7 @@ class Prescription {
   final String dosage;
   final String instructions;
   final DateTime date;
+  final String status; // 'pending', 'dispensed'
 
   Prescription({
     required this.id,
@@ -19,6 +20,7 @@ class Prescription {
     required this.dosage,
     required this.instructions,
     required this.date,
+    this.status = 'pending',
   });
 
   factory Prescription.fromFirestore(DocumentSnapshot doc) {
@@ -32,6 +34,7 @@ class Prescription {
       dosage: data['dosage'] ?? '',
       instructions: data['instructions'] ?? '',
       date: (data['date'] as Timestamp).toDate(),
+      status: data['status'] ?? 'pending',
     );
   }
 
@@ -44,6 +47,7 @@ class Prescription {
       'dosage': dosage,
       'instructions': instructions,
       'date': Timestamp.fromDate(date),
+      'status': status,
     };
   }
 }

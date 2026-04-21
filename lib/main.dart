@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'psychiatrist_dashboard/dashboard_screen.dart';
+import 'gp_dashboard/dashboard_screen.dart';
+import 'pharmacist_dashboard/dashboard_screen.dart';
+import 'lab_module/dashboard_screen.dart';
+import 'emergency/emergency_hub_screen.dart';
 import 'psychiatrist_dashboard/repository.dart';
 import 'auth/login_screen.dart';
 import 'auth/auth_service.dart';
@@ -63,6 +67,34 @@ class MyApp extends StatelessWidget {
             if (settings.name == '/prescription_form') {
               final patient = settings.arguments as Patient;
               return MaterialPageRoute(builder: (_) => PrescriptionFormScreen(patient: patient), settings: settings);
+            }
+
+            if (settings.name == '/emergency_hub') {
+              return MaterialPageRoute(builder: (_) => const EmergencyHubScreen(), settings: settings);
+            }
+
+            if (settings.name == '/lab_dashboard') {
+              if (AuthService.instance.isLoggedIn.value) {
+                return MaterialPageRoute(builder: (_) => const LabDashboardScreen(), settings: settings);
+              } else {
+                return MaterialPageRoute(builder: (_) => LoginScreen(redirectTo: '/lab_dashboard'), settings: settings);
+              }
+            }
+
+            if (settings.name == '/pharmacist_dashboard') {
+              if (AuthService.instance.isLoggedIn.value) {
+                return MaterialPageRoute(builder: (_) => const PharmacistDashboardScreen(), settings: settings);
+              } else {
+                return MaterialPageRoute(builder: (_) => LoginScreen(redirectTo: '/pharmacist_dashboard'), settings: settings);
+              }
+            }
+
+            if (settings.name == '/gp_dashboard') {
+              if (AuthService.instance.isLoggedIn.value) {
+                return MaterialPageRoute(builder: (_) => const GPDashboardScreen(), settings: settings);
+              } else {
+                return MaterialPageRoute(builder: (_) => LoginScreen(redirectTo: '/gp_dashboard'), settings: settings);
+              }
             }
 
             // central route guard: require auth for protected routes

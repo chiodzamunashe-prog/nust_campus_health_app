@@ -6,6 +6,8 @@ enum UserRole {
   student,
   psychiatrist,
   gp,
+  pharmacist,
+  lab_tech,
   admin,
 }
 
@@ -35,6 +37,12 @@ class AuthService {
             userRole.value = UserRole.admin;
           } else if (user.email == 'psy') {
             userRole.value = UserRole.psychiatrist;
+          } else if (user.email == 'gp') {
+            userRole.value = UserRole.gp;
+          } else if (user.email == 'pharmacist') {
+            userRole.value = UserRole.pharmacist;
+          } else if (user.email == 'lab') {
+            userRole.value = UserRole.lab_tech;
           } else {
             userRole.value = UserRole.student;
           }
@@ -65,6 +73,15 @@ class AuthService {
       } else if (identifier == 'psy' && password == 'password') {
         ok = true;
         role = UserRole.psychiatrist;
+      } else if (identifier == 'gp' && password == 'password') {
+        ok = true;
+        role = UserRole.gp;
+      } else if (identifier == 'lab' && password == 'password') {
+        ok = true;
+        role = UserRole.lab_tech;
+      } else if (identifier == 'pharmacist' && password == 'password') {
+        ok = true;
+        role = UserRole.pharmacist;
       }
 
       isLoggedIn.value = ok;

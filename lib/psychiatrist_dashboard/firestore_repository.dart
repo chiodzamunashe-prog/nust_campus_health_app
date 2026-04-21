@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'models.dart';
 import 'repository.dart';
 import '../models/prescription_model.dart';
+import '../pharmacist_dashboard/models.dart';
+import '../lab_module/models.dart';
 
 class FirestoreRepository implements DashboardRepository {
   final FirebaseFirestore _db;
@@ -188,5 +191,160 @@ class FirestoreRepository implements DashboardRepository {
         .orderBy('date', descending: true)
         .snapshots()
         .map((s) => s.docs.map((d) => Prescription.fromFirestore(d)).toList());
+  }
+
+  @override
+  Future<bool> updatePrescriptionStatus(String prescriptionId, String status) async {
+    try {
+      await _db.collection('prescriptions').doc(prescriptionId).update({'status': status});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Stream<List<Prescription>> fetchAllPrescriptions() {
+    return _db
+        .collection('prescriptions')
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => Prescription.fromFirestore(d)).toList());
+  }
+
+  // Vitals Methods
+  @override
+  Future<bool> addVitals(Vitals vitals) async {
+    try {
+      await _db.collection('vitals').add(vitals.toMap());
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Stream<List<Vitals>> fetchVitals(String patientId) {
+    return _db
+        .collection('vitals')
+        .where('patientId', isEqualTo: patientId)
+        .orderBy('recordedAt', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => Vitals.fromFirestore(d)).toList());
+  }
+
+  @override
+  Stream<List<Medication>> fetchInventory() {
+    return _db.collection('inventory').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => Medication.fromMap(doc.data(), doc.id)).toList();
+    });
+  }
+
+  @override
+  Future<bool> updateInventoryStock(String medicationId, int newStock) async {
+    try {
+      await _db.collection('inventory').doc(medicationId).update({'stock': newStock});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Lab Methods
+  @override
+  Future<bool> addLabRequest(LabRequest request) async {
+    try {
+      await _db.collection('lab_requests').add(request.toMap());
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Stream<List<LabRequest>> fetchLabRequests() {
+    return _db
+        .collection('lab_requests')
+        .orderBy('orderedAt', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => LabRequest.fromFirestore(d)).toList());
+  }
+
+  @override
+  Future<bool> updateLabResult(String id, String result) async {
+    try {
+      await _db.collection('lab_requests').doc(id).update({
+        'result': result,
+        'status': 'completed',
+        'completedAt': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Stream<List<LabRequest>> fetchLabRequestsForPatient(String patientId) {
+    return _db
+        .collection('lab_requests')
+        .where('patientId', isEqualTo: patientId)
+        .orderBy('orderedAt', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => LabRequest.fromFirestore(d)).toList());
+  }
+
+  @override
+  Stream<Map<String, dynamic>> fetchAdminStats() {
+    // Combine multiple collection snapshots into a single stats map
+    return Rx.combineLatest5(
+      _db.collection('appointments').snapshots(),
+      _db.collection('lab_requests').snapshots(),
+      _db.collection('prescriptions').snapshots(),
+      _db.collection('inventory').snapshots(),
+      _db.collection('patients').snapshots(),
+      (QuerySnapshot appts, QuerySnapshot labs, QuerySnapshot presc, QuerySnapshot inv, QuerySnapshot patients) {
+        return {
+          'totalAppointments': appts.size,
+          'pendingAppointments': appts.docs.where((d) => d['status'] == 'pending').length,
+          'pendingLabs': labs.docs.where((d) => d['status'] == 'pending').length,
+          'pendingPrescriptions': presc.docs.where((d) => d['status'] == 'pending').length,
+          'lowStockMeds': inv.docs.where((d) => d['stock'] < 50).length,
+          'totalPatients': patients.size,
+          'appointmentTrends': [10, 15, 12, 20, 18, 22, 19], // Placeholder for actual time-series logic
+        };
+      },
+    );
+  }
+}
+
+// Helper class for combining streams (requires rxdart)
+class Rx {
+  static Stream<R> combineLatest5<T1, T2, T3, T4, T5, R>(
+    Stream<T1> s1,
+    Stream<T2> s2,
+    Stream<T3> s3,
+    Stream<T4> s4,
+    Stream<T5> s5,
+    R Function(T1, T2, T3, T4, T5) combiner,
+  ) {
+    late StreamController<R> controller;
+    controller = StreamController<R>.broadcast(onListen: () {
+      T1? v1; T2? v2; T3? v3; T4? v4; T5? v5;
+      bool b1 = false, b2 = false, b3 = false, b4 = false, b5 = false;
+
+      void update() {
+        if (b1 && b2 && b3 && b4 && b5) {
+          controller.add(combiner(v1!, v2!, v3!, v4!, v5!));
+        }
+      }
+
+      s1.listen((v) { v1 = v; b1 = true; update(); });
+      s2.listen((v) { v2 = v; b2 = true; update(); });
+      s3.listen((v) { v3 = v; b3 = true; update(); });
+      s4.listen((v) { v4 = v; b4 = true; update(); });
+      s5.listen((v) { v5 = v; b5 = true; update(); });
+    });
+    return controller.stream;
   }
 }
