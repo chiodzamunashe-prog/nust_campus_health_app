@@ -11,7 +11,13 @@ class AdminDashboard extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FA),
       appBar: AppBar(
-        title: const Text('Clinic Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            Image.asset('assets/logo.png', height: 32),
+            const SizedBox(width: 12),
+            const Text('Clinic Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         backgroundColor: const Color(0xFF003366),
         foregroundColor: Colors.white,
         actions: [

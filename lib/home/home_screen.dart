@@ -454,13 +454,18 @@ class HomeScreen extends StatelessWidget {
             decoration: const BoxDecoration(
               color: Color(0xFF003366),
             ), // NUST Blue
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 40, color: Color(0xFF003366)),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/logo.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
                 SizedBox(height: 12),
                 Text(
