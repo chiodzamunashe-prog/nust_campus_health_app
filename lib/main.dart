@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'psychiatrist_dashboard/dashboard_screen.dart';
+import 'psychiatrist_dashboard/repository.dart';
 import 'auth/login_screen.dart';
 import 'auth/auth_service.dart';
 import 'psychiatrist_dashboard/mock_repository.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         }
 
         return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       onGenerateRoute: (settings) {
         // Centralized route guard: require auth for /psy_dashboard
@@ -78,6 +80,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+      },
     );
   }
 }
