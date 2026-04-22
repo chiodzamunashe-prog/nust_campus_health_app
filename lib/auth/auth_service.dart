@@ -1,25 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import '../notifications/repository.dart';
+import '../notifications/firestore_repository.dart';
+import '../notifications/mock_repository.dart';
 
-enum UserRole {
-  none,
-  student,
-  psychiatrist,
-  gp,
-  pharmacist,
-  lab_tech,
-  admin,
-}
+enum UserRole { none, student, psychiatrist, gp, pharmacist, lab_tech, admin }
 
 class AuthService {
   AuthService._privateConstructor();
   static final AuthService instance = AuthService._privateConstructor();
 
   final ValueNotifier<bool> isLoggedIn = ValueNotifier<bool>(false);
-  final ValueNotifier<UserRole> userRole = ValueNotifier<UserRole>(UserRole.none);
+  final ValueNotifier<UserRole> userRole = ValueNotifier<UserRole>(
+    UserRole.none,
+  );
   String? currentUser;
-
+  NotificationsRepository? _notificationsRepository;
   bool _firebaseAvailable = false;
+
+  String get currentUserId => currentUser ?? 'guest';
   fb.FirebaseAuth? _fbAuth;
 
   // Initialize auth service. Safe to call multiple times.
@@ -91,7 +90,10 @@ class AuthService {
     }
 
     try {
-      final result = await _fbAuth!.signInWithEmailAndPassword(email: identifier, password: password);
+      final result = await _fbAuth!.signInWithEmailAndPassword(
+        email: identifier,
+        password: password,
+      );
       final user = result.user;
       isLoggedIn.value = user != null;
       currentUser = user?.email;
@@ -113,5 +115,20 @@ class AuthService {
     isLoggedIn.value = false;
     userRole.value = UserRole.none;
     currentUser = null;
+  }
+
+  /// Get the notifications repository (Firebase or Mock depending on availability)
+  NotificationsRepository getNotificationsRepository() {
+    if (_notificationsRepository != null) {
+      return _notificationsRepository!;
+    }
+
+    if (_firebaseAvailable) {
+      _notificationsRepository = FirestoreNotificationsRepository();
+    } else {
+      _notificationsRepository = MockNotificationsRepository();
+    }
+
+    return _notificationsRepository!;
   }
 }

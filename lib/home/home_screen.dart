@@ -14,10 +14,7 @@ class HomeScreen extends StatelessWidget {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
-          ),
+          _buildNotificationsButton(context),
           IconButton(
             icon: const Icon(Icons.person_outline),
             onPressed: () {
@@ -47,6 +44,47 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNotificationsButton(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: AuthService.instance.isLoggedIn,
+      builder: (context, loggedIn, _) {
+        return FutureBuilder<int>(
+          future: loggedIn
+              ? AuthService.instance
+                    .getNotificationsRepository()
+                    .getUnreadCount(AuthService.instance.currentUserId)
+              : Future<int>.value(0),
+          builder: (context, snapshot) {
+            final hasUnread = (snapshot.data ?? 0) > 0;
+
+            return IconButton(
+              onPressed: () => Navigator.pushNamed(context, '/notifications'),
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.notifications_none),
+                  if (hasUnread)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -236,7 +274,8 @@ class HomeScreen extends StatelessWidget {
                 'Pharmacy',
                 Icons.medication,
                 Colors.green.shade600,
-                onTap: () => Navigator.pushNamed(context, '/student_prescriptions'),
+                onTap: () =>
+                    Navigator.pushNamed(context, '/student_prescriptions'),
               ),
               _buildActionCard(
                 context,
@@ -461,10 +500,7 @@ class HomeScreen extends StatelessWidget {
                   radius: 30,
                   backgroundColor: Colors.white,
                   child: ClipOval(
-                    child: Image.asset(
-                      'assets/logo.png',
-                      fit: BoxFit.cover,
-                    ),
+                    child: Image.asset('assets/logo.png', fit: BoxFit.cover),
                   ),
                 ),
                 SizedBox(height: 12),
@@ -575,6 +611,27 @@ class HomeScreen extends StatelessWidget {
                       context,
                       '/login',
                       arguments: '/pharmacist_dashboard',
+                    );
+                  }
+                },
+              );
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: AuthService.instance.isLoggedIn,
+            builder: (context, loggedIn, _) {
+              return ListTile(
+                leading: const Icon(Icons.notifications),
+                title: const Text('Notifications & Reminders'),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (loggedIn) {
+                    Navigator.pushNamed(context, '/notifications');
+                  } else {
+                    Navigator.pushNamed(
+                      context,
+                      '/login',
+                      arguments: '/notifications',
                     );
                   }
                 },
