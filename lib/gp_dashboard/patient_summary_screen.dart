@@ -3,7 +3,7 @@ import '../psychiatrist_dashboard/models.dart';
 import '../psychiatrist_dashboard/repository.dart';
 import '../lab_module/models.dart';
 import 'vitals_form.dart';
-import '../../auth/auth_service.dart';
+import '../auth/auth_service.dart';
 
 class GPPatientSummaryScreen extends StatefulWidget {
   final Patient patient;
@@ -19,6 +19,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
   final TextEditingController _noteController = TextEditingController();
   late Stream<List<Note>> _notesStream;
   late Stream<List<Vitals>> _vitalsStream;
+  late Stream<List<LabRequest>> _labStream;
+  late Future<List<Appointment>> _historyFuture;
+  late Future<List<Note>> _allNotesFuture;
 
   @override
   void initState() {
@@ -26,9 +29,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
     _notesStream = repository.fetchNotesStream(widget.appointmentId);
     _vitalsStream = repository.fetchVitals(widget.patient.id);
     _labStream = repository.fetchLabRequestsForPatient(widget.patient.id);
+    _historyFuture = repository.fetchPatientHistory(widget.patient.id);
+    _allNotesFuture = repository.fetchAllNotesByPatient(widget.patient.id);
   }
-
-  late Stream<List<LabRequest>> _labStream;
 
   void _addNote() async {
     if (_noteController.text.trim().isEmpty) return;
@@ -39,12 +42,25 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.patient.name, style: const TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: const Color(0xFF004D40),
           foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.medication),
+              tooltip: 'Issue Prescription',
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  '/prescription_form',
+                  arguments: widget.patient,
+                );
+              },
+            ),
+          ],
           bottom: const TabBar(
             indicatorColor: Colors.white,
             labelColor: Colors.white,
@@ -53,6 +69,7 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
               Tab(text: 'Consultation', icon: Icon(Icons.note_alt)),
               Tab(text: 'Vitals', icon: Icon(Icons.monitor_heart)),
               Tab(text: 'Lab', icon: Icon(Icons.biotech)),
+              Tab(text: 'History', icon: Icon(Icons.history)),
             ],
           ),
         ),
@@ -61,6 +78,7 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
             _buildConsultationTab(),
             _buildVitalsTab(),
             _buildLabTab(),
+            _buildHistoryTab(),
           ],
         ),
         floatingActionButton: Builder(
@@ -68,7 +86,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
             return FloatingActionButton.extended(
               onPressed: () {
                 final tabController = DefaultTabController.of(context);
-                if (tabController.index == 2) {
+                if (tabController.index == 3) {
+                  return; // No FAB action for History
+                } else if (tabController.index == 2) {
                   _showOrderLabDialog();
                 } else if (tabController.index == 1) {
                   _showVitalsForm();
@@ -331,6 +351,59 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHistoryTab() {
+    return FutureBuilder<List<Object>>(
+      future: Future.wait([_historyFuture, _allNotesFuture]),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final results = snap.data as List<dynamic>?;
+        final historyAppts = results?[0] as List<Appointment>? ?? [];
+        final allNotes = results?[1] as List<Note>? ?? [];
+
+        final pastAppts = historyAppts.where((a) => a.id != widget.appointmentId).toList();
+
+        if (pastAppts.isEmpty) {
+          return const Center(child: Text('No past appointments found.'));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: pastAppts.length,
+          itemBuilder: (context, index) {
+            final appt = pastAppts[index];
+            final apptNotes = allNotes.where((n) => n.appointmentId == appt.id).toList();
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ExpansionTile(
+                title: Text('Session: ${appt.time.toLocal()}'.split('.')[0], style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('Status: ${appt.status}'),
+                leading: Icon(
+                  appt.status == 'completed' ? Icons.check_circle : Icons.history,
+                  color: appt.status == 'completed' ? Colors.green : Colors.grey,
+                ),
+                children: [
+                  if (apptNotes.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('No notes for this session.'),
+                    )
+                  else
+                    ...apptNotes.map((n) => ListTile(
+                          title: Text(n.text),
+                          subtitle: Text(n.createdAt.toLocal().toString().split('.')[0]),
+                        )),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
