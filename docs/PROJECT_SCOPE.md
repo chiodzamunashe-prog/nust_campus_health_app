@@ -20,10 +20,10 @@ The table below outlines all planned modules. Each module can be developed indep
 | 1 | **Psychiatrist Dashboard** | ✅ Completed | Dashboard for psychiatrists to manage appointments, view patient info, write/edit session notes, and issue prescriptions |
 | 2 | **Student Portal / Home** | ✅ Completed | Student-facing home screen with health tips, announcements, and quick actions |
 | 3 | **Appointment Booking** | ✅ Completed | Students book, track, and manage their own medical sessions via interactive calendar |
-| 4 | **General Practitioner Dashboard** | 🔴 Not Started | Similar to Psychiatrist Dashboard but for GPs — patient queue, prescriptions |
+| 4 | **General Practitioner Dashboard** | ✅ Completed | Similar to Psychiatrist Dashboard but for GPs — patient queue, structured consultation forms, and medical certificates |
 | 5 | **Health Records** | ✅ Completed | Integrated with summary views and session history |
 | 6 | **Notifications & Reminders** | ✅ Completed | Push notifications and appointment reminders fully implemented |
-| 7 | **Chat / Messaging** | 🔴 Not Started | Real-time messaging between students and healthcare providers |
+| 7 | **Chat / Messaging** | 🔄 In Progress | Real-time messaging between students and healthcare providers |
 | 8 | **Admin Panel** | ✅ Completed | Admin users manage staff accounts, roles, and view analytics |
 | 9 | **Authentication & User Management** | ✅ Completed | Role-based login (student, admin, psy) with branded NUST theme |
 | 10 | **Profile Management** | ✅ Completed | Basic profile viewing implemented |
@@ -32,21 +32,21 @@ The table below outlines all planned modules. Each module can be developed indep
 
 ## 2.5 Project Progress Summary
 
-**Overall Completion: 80% (8 of 10 modules complete)**
+**Overall Completion: 90% (9 of 10 modules complete)**
 
 | Category | Status | Progress |
 |----------|--------|----------|
-| Core Modules Completed | 8/10 | 80% ✅ |
+| Core Modules Completed | 9/10 | 90% ✅ |
 | Psychiatrist Dashboard | 7/7 Features | 100% ✅ |
-| Frontend/UI | Complete | 95% ✅ |
+| GP Dashboard | 5/5 Features | 100% ✅ |
+| Frontend/UI | Complete | 98% ✅ |
 | Backend Integration | Firestore + Mock | 100% ✅ |
 | Authentication | Role-based Auth | 100% ✅ |
-| **Remaining Modules** | **2 of 10** | **20% 🔄** |
-| - General Practitioner Dashboard | Not Started | 0% |
-| - Chat / Messaging | Not Started | 0% |
+| **Remaining Modules** | **1 of 10** | **10% 🔄** |
+| - Chat / Messaging | Data Layer Done | 30% |
 
-**Last Updated**: April 22, 2026  
-**Latest Commit**: All 7 Psychiatrist Dashboard features completed and merged
+**Last Updated**: April 24, 2026  
+**Latest Commit**: GP Dashboard Completed (Stats Banner, Structured Notes, Medical Certificates)
 
 ---
 
@@ -105,13 +105,7 @@ These are foundational pieces that other modules can build on top of:
 ## 6. Next Steps & Recommendations
 
 ### 🔴 High Priority (Next Phase)
-1. **General Practitioner Dashboard** (Similar to Psychiatrist Dashboard)
-   - Patient queue management
-   - Prescription management
-   - Patient history & notes
-   - Appointment workflow
-   
-2. **Chat / Messaging Module**
+1. **Chat / Messaging Module** (Currently in progress)
    - Real-time messaging between students & providers
    - Notification integration
    - Message persistence in Firestore
