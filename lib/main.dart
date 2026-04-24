@@ -113,8 +113,8 @@ class _MyAppState extends State<MyApp> {
               if (AuthService.instance.isLoggedIn.value) {
                 return MaterialPageRoute(
                   builder: (_) => ChatListScreen(
-                    userId: AuthService.instance.currentUserEmail.value ?? 'Unknown',
-                    userRole: AuthService.instance.currentUserRole.value ?? 'student',
+                    userId: AuthService.instance.currentUserId,
+                    userRole: AuthService.instance.userRole.value.name,
                   ),
                   settings: settings,
                 );
