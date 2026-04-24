@@ -4,6 +4,7 @@ import '../psychiatrist_dashboard/repository.dart';
 import '../lab_module/models.dart';
 import 'vitals_form.dart';
 import 'gp_consultation_form.dart';
+import 'gp_medical_certificate_form.dart';
 import '../auth/auth_service.dart';
 
 class GPPatientSummaryScreen extends StatefulWidget {
@@ -43,6 +44,23 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
           backgroundColor: const Color(0xFF004D40),
           foregroundColor: Colors.white,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.description),
+              tooltip: 'Issue Sick Note',
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) => GPMedicalCertificateForm(
+                    appointmentId: widget.appointmentId,
+                    patientName: widget.patient.name,
+                  ),
+                );
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.medication),
               tooltip: 'Issue Prescription',
@@ -129,27 +147,54 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
                   final note = notes[index];
+                  final isSickNote = note.text.contains('*** OFFICIAL MEDICAL CERTIFICATE ***');
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
+                    elevation: isSickNote ? 4 : 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: isSickNote ? const Color(0xFFD4AF37) : Colors.transparent, // Gold border for sick notes
+                        width: isSickNote ? 2 : 0,
+                      ),
+                    ),
+                    color: isSickNote ? const Color(0xFFFFFDF5) : Colors.white,
                     child: Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${note.createdAt.toLocal()}'.split('.')[0],
-                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              Row(
+                                children: [
+                                  if (isSickNote) ...[
+                                    const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 16),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      'MEDICAL CERTIFICATE',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                  Text(
+                                    '${note.createdAt.toLocal()}'.split('.')[0],
+                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                  ),
+                                ],
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
                                 onPressed: () => repository.deleteNote(note.id),
                               ),
                             ],
                           ),
-                          Text(note.text),
+                          const SizedBox(height: 8),
+                          Text(note.text, style: TextStyle(fontSize: 14, height: 1.4, color: isSickNote ? Colors.black87 : Colors.black)),
                         ],
                       ),
                     ),
