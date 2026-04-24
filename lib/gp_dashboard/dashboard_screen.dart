@@ -4,7 +4,7 @@ import '../psychiatrist_dashboard/models.dart';
 import '../psychiatrist_dashboard/repository.dart';
 import 'patient_summary_screen.dart';
 
-enum DashboardViewMode { list, calendar }
+enum GPDashboardViewMode { list, calendar }
 
 class GPDashboardScreen extends StatefulWidget {
   const GPDashboardScreen({super.key});
@@ -17,7 +17,7 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
   late Stream<List<Appointment>> _appointmentsStream;
   String _searchQuery = '';
   String _filterStatus = 'all';
-  DashboardViewMode _viewMode = DashboardViewMode.list;
+  GPDashboardViewMode _viewMode = GPDashboardViewMode.list;
   
   // Calendar State
   CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -32,12 +32,12 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
 
   void _onViewToggle() {
     setState(() {
-      _viewMode = _viewMode == DashboardViewMode.list 
-          ? DashboardViewMode.calendar 
-          : DashboardViewMode.list;
+      _viewMode = _viewMode == GPDashboardViewMode.list 
+          ? GPDashboardViewMode.calendar 
+          : GPDashboardViewMode.list;
       
       // Update stream if switching to calendar
-      if (_viewMode == DashboardViewMode.calendar && _selectedDay != null) {
+      if (_viewMode == GPDashboardViewMode.calendar && _selectedDay != null) {
         _appointmentsStream = repository.fetchAppointmentsForDay(_selectedDay!);
       } else {
         _appointmentsStream = repository.fetchAppointments();
@@ -53,16 +53,16 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
         backgroundColor: const Color(0xFF004D40), // Dark Teal for GP
         actions: [
           IconButton(
-            icon: Icon(_viewMode == DashboardViewMode.list ? Icons.calendar_month : Icons.list),
+            icon: Icon(_viewMode == GPDashboardViewMode.list ? Icons.calendar_month : Icons.list),
             onPressed: _onViewToggle,
-            tooltip: 'Switch to ${_viewMode == DashboardViewMode.list ? "Calendar" : "List"} View',
+            tooltip: 'Switch to ${_viewMode == GPDashboardViewMode.list ? "Calendar" : "List"} View',
           ),
         ],
-        bottom: _viewMode == DashboardViewMode.list ? _buildListFilters() : null,
+        bottom: _viewMode == GPDashboardViewMode.list ? _buildListFilters() : null,
       ),
       body: Column(
         children: [
-          if (_viewMode == DashboardViewMode.calendar) _buildCalendar(),
+          if (_viewMode == GPDashboardViewMode.calendar) _buildCalendar(),
           Expanded(
             child: StreamBuilder<List<Appointment>>(
               stream: _appointmentsStream,
@@ -77,7 +77,7 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                 var appointments = snapshot.data ?? [];
 
                 // Secondary Filtering for Search and Status (if in list mode)
-                if (_viewMode == DashboardViewMode.list && _filterStatus != 'all') {
+                if (_viewMode == GPDashboardViewMode.list && _filterStatus != 'all') {
                   appointments = appointments.where((a) => a.status == _filterStatus).toList();
                 }
 
@@ -206,7 +206,7 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
             final patient = psnap.data;
             final patientName = patient?.name ?? 'Unknown';
 
-            if (_viewMode == DashboardViewMode.list &&
+            if (_viewMode == GPDashboardViewMode.list &&
                 _searchQuery.isNotEmpty &&
                 !patientName.toLowerCase().contains(_searchQuery)) {
               return const SizedBox.shrink();
