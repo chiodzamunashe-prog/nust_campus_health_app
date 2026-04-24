@@ -3,6 +3,7 @@ import '../psychiatrist_dashboard/models.dart';
 import '../psychiatrist_dashboard/repository.dart';
 import '../lab_module/models.dart';
 import 'vitals_form.dart';
+import 'gp_consultation_form.dart';
 import '../auth/auth_service.dart';
 
 class GPPatientSummaryScreen extends StatefulWidget {
@@ -16,7 +17,6 @@ class GPPatientSummaryScreen extends StatefulWidget {
 }
 
 class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
-  final TextEditingController _noteController = TextEditingController();
   late Stream<List<Note>> _notesStream;
   late Stream<List<Vitals>> _vitalsStream;
   late Stream<List<LabRequest>> _labStream;
@@ -31,12 +31,6 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
     _labStream = repository.fetchLabRequestsForPatient(widget.patient.id);
     _historyFuture = repository.fetchPatientHistory(widget.patient.id);
     _allNotesFuture = repository.fetchAllNotesByPatient(widget.patient.id);
-  }
-
-  void _addNote() async {
-    if (_noteController.text.trim().isEmpty) return;
-    await repository.addNote(widget.appointmentId, _noteController.text.trim());
-    _noteController.clear();
   }
 
   @override
@@ -234,30 +228,11 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
   }
 
   void _showNoteDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Consultation Note'),
-        content: TextField(
-          controller: _noteController,
-          maxLines: 5,
-          decoration: const InputDecoration(
-            hintText: 'Enter clinical notes here...',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              _addNote();
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF004D40)),
-            child: const Text('Save Note'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => GPConsultationForm(appointmentId: widget.appointmentId),
     );
   }
 
