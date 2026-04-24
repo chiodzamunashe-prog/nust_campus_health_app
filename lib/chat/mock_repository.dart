@@ -69,19 +69,26 @@ class MockChatRepository implements ChatRepository {
   }
 
   @override
-  Stream<List<ChatRoom>> fetchChatRooms(String userId) {
-    // Filter rooms where the user is a participant
-    _broadcastRooms();
-    return _roomsController.stream.map(
+  Stream<List<ChatRoom>> fetchChatRooms(String userId) async* {
+    // Yield the initial current state
+    yield _rooms.where((r) => r.participants.contains(userId)).toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      
+    // Yield all subsequent updates
+    yield* _roomsController.stream.map(
       (rooms) => rooms.where((r) => r.participants.contains(userId)).toList()
         ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt))
     );
   }
 
   @override
-  Stream<List<ChatMessage>> fetchMessages(String roomId) {
-    _broadcastMessages();
-    return _messagesController.stream.map(
+  Stream<List<ChatMessage>> fetchMessages(String roomId) async* {
+    // Yield the initial current state
+    yield _messages.where((m) => m.roomId == roomId).toList()
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      
+    // Yield all subsequent updates
+    yield* _messagesController.stream.map(
       (msgs) => msgs.where((m) => m.roomId == roomId).toList()
         ..sort((a, b) => a.timestamp.compareTo(b.timestamp)) // Chronological order
     );

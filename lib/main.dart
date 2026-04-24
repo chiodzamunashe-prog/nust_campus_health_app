@@ -253,7 +253,32 @@ class _MyAppState extends State<MyApp> {
             }
 
             return MaterialPageRoute(
-              builder: (_) => const HomeScreen(),
+              builder: (_) => ValueListenableBuilder<bool>(
+                valueListenable: AuthService.instance.isLoggedIn,
+                builder: (context, loggedIn, _) {
+                  if (!loggedIn) {
+                    return const LoginScreen();
+                  }
+
+                  // If logged in, redirect based on role
+                  final role = AuthService.instance.userRole.value;
+                  switch (role) {
+                    case UserRole.admin:
+                      return const AdminDashboard();
+                    case UserRole.psychiatrist:
+                      return const PsychiatristDashboardScreen();
+                    case UserRole.gp:
+                      return const GPDashboardScreen();
+                    case UserRole.pharmacist:
+                      return const PharmacistDashboardScreen();
+                    case UserRole.lab_tech:
+                      return const LabDashboardScreen();
+                    case UserRole.student:
+                    default:
+                      return const HomeScreen();
+                  }
+                },
+              ),
               settings: settings,
             );
           },

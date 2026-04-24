@@ -18,6 +18,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   final AppNotificationService _notificationService =
       AppNotificationService.instance;
   String _currentUserId = 'guest';
+  late Stream<List<notif.Notification>> _notificationsStream;
+  late Stream<List<notif.Reminder>> _remindersStream;
 
   @override
   void initState() {
@@ -30,6 +32,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       userId: _currentUserId,
       onToken: (token) => _repository.upsertDeviceToken(_currentUserId, token),
     );
+
+    _notificationsStream = _repository.fetchNotifications(_currentUserId);
+    _remindersStream = _repository.fetchReminders(_currentUserId);
   }
 
   @override
@@ -63,7 +68,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   Widget _buildNotificationsTab(String userId) {
     return StreamBuilder<List<notif.Notification>>(
-      stream: _repository.fetchNotifications(userId),
+      stream: _notificationsStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -225,7 +230,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   Widget _buildRemindersTab(String userId) {
     return StreamBuilder<List<notif.Reminder>>(
-      stream: _repository.fetchReminders(userId),
+      stream: _remindersStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
