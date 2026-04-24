@@ -81,22 +81,75 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                   appointments = appointments.where((a) => a.status == _filterStatus).toList();
                 }
 
-                if (appointments.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Text('No appointments found for this selection.'),
+                return Column(
+                  children: [
+                    if (_viewMode == GPDashboardViewMode.list)
+                      _buildStatsBanner(snapshot.data ?? []),
+                    Expanded(
+                      child: appointments.isEmpty
+                          ? const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: Text('No appointments found for this selection.'),
+                              ),
+                            )
+                          : _buildAppointmentList(appointments),
                     ),
-                  );
-                }
-
-                return _buildAppointmentList(appointments);
+                  ],
+                );
               },
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildStatsBanner(List<Appointment> all) {
+    final today = DateTime.now();
+    final todayCount = all.where((a) =>
+      a.time.year == today.year && a.time.month == today.month && a.time.day == today.day).length;
+    final pending = all.where((a) => a.status == 'pending').length;
+    final completed = all.where((a) => a.status == 'completed').length;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF004D40), Color(0xFF00796B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildStat('Today', todayCount.toString(), Icons.today),
+          _buildStatDivider(),
+          _buildStat('Pending', pending.toString(), Icons.pending_actions),
+          _buildStatDivider(),
+          _buildStat('Completed', completed.toString(), Icons.check_circle_outline),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStat(String label, String value, IconData icon) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.white70, size: 20),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _buildStatDivider() {
+    return Container(width: 1, height: 40, color: Colors.white24);
   }
 
   PreferredSizeWidget _buildListFilters() {
