@@ -43,10 +43,10 @@ The table below outlines all planned modules. Each module can be developed indep
 | Backend Integration | Firestore + Mock | 100% ✅ |
 | Authentication | Role-based Auth | 100% ✅ |
 | **Remaining Modules** | **1 of 10** | **10% 🔄** |
-| - Chat / Messaging | Data Layer Done | 30% |
+| - Chat / Messaging | UI & Data Layer Done | 70% |
 
 **Last Updated**: April 24, 2026  
-**Latest Commit**: GP Dashboard Completed (Stats Banner, Structured Notes, Medical Certificates)
+**Latest Commit**: Chat Module Phase 2 (UI Screens) Completed
 
 ---
 
