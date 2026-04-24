@@ -14,6 +14,10 @@ class HomeScreen extends StatelessWidget {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () => Navigator.pushNamed(context, '/chat_list'),
+          ),
           _buildNotificationsButton(context),
           IconButton(
             icon: const Icon(Icons.person_outline),

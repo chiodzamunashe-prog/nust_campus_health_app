@@ -54,6 +54,11 @@ class _PsychiatristDashboardScreenState
         title: const Text('Psychiatrist Dashboard'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            tooltip: 'Messages',
+            onPressed: () => Navigator.pushNamed(context, '/chat_list'),
+          ),
+          IconButton(
             icon: Icon(_viewMode == DashboardViewMode.list ? Icons.calendar_month : Icons.list),
             onPressed: _onViewToggle,
             tooltip: 'Switch to ${_viewMode == DashboardViewMode.list ? "Calendar" : "List"} View',

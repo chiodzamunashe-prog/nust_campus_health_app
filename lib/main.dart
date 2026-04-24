@@ -12,6 +12,10 @@ import 'psychiatrist_dashboard/firestore_repository.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'home/home_screen.dart';
 import 'admin/repository/admin_repository.dart'; // [ADMIN]
+import 'chat/repository.dart';
+import 'chat/mock_repository.dart';
+import 'chat/firestore_repository.dart';
+import 'chat/chat_list_screen.dart';
 import 'admin/ui/admin_dashboard.dart'; // [ADMIN]
 import 'appointments/booking_screen.dart';
 import 'appointments/my_appointments_screen.dart';
@@ -59,12 +63,15 @@ class _MyAppState extends State<MyApp> {
     if (firebaseReady) {
       try {
         repository = FirestoreRepository();
+        chatRepository = FirestoreChatRepository();
       } catch (_) {
         initMockRepository();
+        initMockChatRepository();
       }
       initAdminMockRepository();
     } else {
       initMockRepository();
+      initMockChatRepository();
       initAdminMockRepository();
     }
 
@@ -100,6 +107,23 @@ class _MyAppState extends State<MyApp> {
                 builder: (_) => const MyAppointmentsScreen(),
                 settings: settings,
               );
+            }
+
+            if (settings.name == '/chat_list') {
+              if (AuthService.instance.isLoggedIn.value) {
+                return MaterialPageRoute(
+                  builder: (_) => ChatListScreen(
+                    userId: AuthService.instance.currentUserEmail.value ?? 'Unknown',
+                    userRole: AuthService.instance.currentUserRole.value ?? 'student',
+                  ),
+                  settings: settings,
+                );
+              } else {
+                return MaterialPageRoute(
+                  builder: (_) => LoginScreen(redirectTo: '/chat_list'),
+                  settings: settings,
+                );
+              }
             }
 
             if (settings.name == '/book_appointment') {

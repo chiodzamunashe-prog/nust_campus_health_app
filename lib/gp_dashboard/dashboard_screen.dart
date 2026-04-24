@@ -53,6 +53,11 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
         backgroundColor: const Color(0xFF004D40), // Dark Teal for GP
         actions: [
           IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            tooltip: 'Messages',
+            onPressed: () => Navigator.pushNamed(context, '/chat_list'),
+          ),
+          IconButton(
             icon: Icon(_viewMode == GPDashboardViewMode.list ? Icons.calendar_month : Icons.list),
             onPressed: _onViewToggle,
             tooltip: 'Switch to ${_viewMode == GPDashboardViewMode.list ? "Calendar" : "List"} View',
