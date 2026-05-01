@@ -67,11 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          child: Image.asset(
-          'assets/logo.png',
-          width: 80,
-          height: 80,
-        ),
+          child: Image.asset('assets/logo.png', width: 80, height: 80),
         ),
         const SizedBox(height: 24),
         const Text(
@@ -135,8 +131,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 icon: Icons.lock_outline,
                 obscureText: _obscurePassword,
                 suffix: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),
@@ -160,10 +159,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: const Color(0xFF003366),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 4,
                       ),
-                      child: const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
             ],
           ),
@@ -213,19 +220,28 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: () {},
           child: const Text(
             'Forgot Password?',
-            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Don't have an account? ", style: TextStyle(color: Colors.white60)),
+            const Text(
+              "Don't have an account? ",
+              style: TextStyle(color: Colors.white60),
+            ),
             TextButton(
               onPressed: () {},
               child: const Text(
                 'Contact Admissions',
-                style: TextStyle(color: Color(0xFFFFB81C), fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Color(0xFFFFB81C),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -240,7 +256,10 @@ class _LoginScreenState extends State<LoginScreen> {
       _loading = true;
       _error = null;
     });
-    final ok = await AuthService.instance.login(_identifierCtrl.text.trim(), _passCtrl.text.trim());
+    final ok = await AuthService.instance.login(
+      _identifierCtrl.text.trim(),
+      _passCtrl.text.trim(),
+    );
     if (!mounted) return;
     setState(() => _loading = false);
     if (ok) {
