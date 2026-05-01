@@ -44,10 +44,18 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
             icon: const Icon(Icons.check_circle_outline, color: Colors.green),
             tooltip: 'Mark as Completed',
             onPressed: () async {
-              final ok = await repository.updateAppointmentStatus(widget.appointmentId, 'completed');
+              final currentContext = context;
+              final ok = await repository.updateAppointmentStatus(
+                widget.appointmentId,
+                'completed',
+              );
               if (ok && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Appointment marked as completed')));
-                Navigator.pop(context);
+                ScaffoldMessenger.of(currentContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('Appointment marked as completed'),
+                  ),
+                );
+                Navigator.pop(currentContext);
               }
             },
           ),
@@ -93,9 +101,15 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Student ID: ${widget.patient.studentId}', style: Theme.of(context).textTheme.bodyLarge),
+        Text(
+          'Student ID: ${widget.patient.studentId}',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
         const SizedBox(height: 8),
-        Text('Age: ${widget.patient.age}', style: Theme.of(context).textTheme.bodyLarge),
+        Text(
+          'Age: ${widget.patient.age}',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
         const SizedBox(height: 12),
         Text('Summary', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 6),
@@ -108,7 +122,10 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Current Session Notes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Current Session Notes',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -134,44 +151,86 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
         StreamBuilder<List<Note>>(
           stream: _notesStream,
           builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) return const CircularProgressIndicator();
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            }
             final notes = snap.data ?? [];
-            if (notes.isEmpty) return const Text('No notes for this session yet.');
+            if (notes.isEmpty) {
+              return const Text('No notes for this session yet.');
+            }
             return Column(
-              children: notes.map((n) => ListTile(
-                title: Text(n.text),
-                subtitle: Text(n.createdAt.toLocal().toString()),
-                contentPadding: EdgeInsets.zero,
-                trailing: PopupMenuButton<String>(
-                  onSelected: (value) async {
-                    if (value == 'delete') {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Delete Note'),
-                          content: const Text('Are you sure you want to delete this note?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                            Theme(
-                              data: Theme.of(ctx).copyWith(colorScheme: ColorScheme.fromSeed(seedColor: Colors.red, primary: Colors.red)),
-                              child: ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
+              children: notes
+                  .map(
+                    (n) => ListTile(
+                      title: Text(n.text),
+                      subtitle: Text(n.createdAt.toLocal().toString()),
+                      contentPadding: EdgeInsets.zero,
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (value) async {
+                          if (value == 'delete') {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Delete Note'),
+                                content: const Text(
+                                  'Are you sure you want to delete this note?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  Theme(
+                                    data: Theme.of(ctx).copyWith(
+                                      colorScheme: ColorScheme.fromSeed(
+                                        seedColor: Colors.red,
+                                        primary: Colors.red,
+                                      ),
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: const Text('Delete'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              await repository.deleteNote(n.id);
+                            }
+                          } else if (value == 'edit') {
+                            _showEditNoteDialog(n);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, size: 18),
+                                SizedBox(width: 8),
+                                Text('Edit'),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        await repository.deleteNote(n.id);
-                      }
-                    } else if (value == 'edit') {
-                      _showEditNoteDialog(n);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit, size: 18), SizedBox(width: 8), Text('Edit')])),
-                    const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
-                  ],
-                ),
-              )).toList(),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, size: 18, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
             );
           },
         ),
@@ -185,7 +244,11 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
       children: [
         const Text(
           'Patient History',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.blueGrey,
+          ),
         ),
         const SizedBox(height: 16),
         FutureBuilder<List<Object>>(
@@ -199,7 +262,9 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
             final allNotes = results?[1] as List<Note>? ?? [];
 
             // Filter out the current appointment
-            final pastAppts = historyAppts.where((a) => a.id != widget.appointmentId).toList();
+            final pastAppts = historyAppts
+                .where((a) => a.id != widget.appointmentId)
+                .toList();
 
             if (pastAppts.isEmpty) {
               return const Text('No past appointments found.');
@@ -211,7 +276,9 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
               itemCount: pastAppts.length,
               itemBuilder: (context, index) {
                 final appt = pastAppts[index];
-                final apptNotes = allNotes.where((n) => n.appointmentId == appt.id).toList();
+                final apptNotes = allNotes
+                    .where((n) => n.appointmentId == appt.id)
+                    .toList();
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -219,8 +286,12 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
                     title: Text('Session: ${appt.time.toLocal()}'),
                     subtitle: Text('Status: ${appt.status}'),
                     leading: Icon(
-                      appt.status == 'completed' ? Icons.check_circle : Icons.history,
-                      color: appt.status == 'completed' ? Colors.green : Colors.grey,
+                      appt.status == 'completed'
+                          ? Icons.check_circle
+                          : Icons.history,
+                      color: appt.status == 'completed'
+                          ? Colors.green
+                          : Colors.grey,
                     ),
                     children: [
                       if (apptNotes.isEmpty)
@@ -229,10 +300,12 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
                           child: Text('No notes for this session.'),
                         )
                       else
-                        ...apptNotes.map((n) => ListTile(
-                              title: Text(n.text),
-                              subtitle: Text(n.createdAt.toLocal().toString()),
-                            )),
+                        ...apptNotes.map(
+                          (n) => ListTile(
+                            title: Text(n.text),
+                            subtitle: Text(n.createdAt.toLocal().toString()),
+                          ),
+                        ),
                     ],
                   ),
                 );
@@ -256,13 +329,17 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
           decoration: const InputDecoration(hintText: 'Enter updated note...'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () async {
               final newText = ctrl.text.trim();
               if (newText.isNotEmpty) {
+                final currentCtx = ctx;
                 await repository.updateNote(note.id, newText);
-                if (mounted) Navigator.pop(ctx);
+                if (mounted) Navigator.pop(currentCtx);
               }
             },
             child: const Text('Update'),
@@ -282,7 +359,10 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Laboratory Results', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Laboratory Results',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         StreamBuilder<List<LabRequest>>(
           stream: _labStream,
@@ -297,13 +377,18 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ExpansionTile(
-                    leading: Icon(isCompleted ? Icons.check_circle : Icons.pending, color: isCompleted ? Colors.green : Colors.orange),
+                    leading: Icon(
+                      isCompleted ? Icons.check_circle : Icons.pending,
+                      color: isCompleted ? Colors.green : Colors.orange,
+                    ),
                     title: Text(r.testType),
                     subtitle: Text('Status: ${r.status}'),
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Text(isCompleted ? r.result : 'Result pending...'),
+                        child: Text(
+                          isCompleted ? r.result : 'Result pending...',
+                        ),
                       ),
                     ],
                   ),
@@ -327,10 +412,14 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
           decoration: const InputDecoration(hintText: 'Enter test name...'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
+              final currentContext = context;
               final request = LabRequest(
                 id: DateTime.now().millisecondsSinceEpoch.toString(),
                 patientId: widget.patient.id,
@@ -340,7 +429,7 @@ class _PatientSummaryScreenState extends State<PatientSummaryScreen> {
                 orderedAt: DateTime.now(),
               );
               await repository.addLabRequest(request);
-              if (mounted) Navigator.pop(context);
+              if (mounted) Navigator.pop(currentContext);
             },
             child: const Text('Order'),
           ),

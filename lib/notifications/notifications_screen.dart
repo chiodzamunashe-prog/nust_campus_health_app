@@ -730,10 +730,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 isActive: true,
                 createdAt: DateTime.now(),
               );
+              final currentContext = context;
               _repository.createReminder(reminder).then((_) {
                 if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  Navigator.pop(currentContext);
+                  ScaffoldMessenger.of(currentContext).showSnackBar(
                     const SnackBar(content: Text('Reminder created')),
                   );
                 }
@@ -798,12 +799,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 createdAt: reminder.createdAt,
                 appointmentId: reminder.appointmentId,
               );
+              final currentContext = context;
               _repository.updateReminder(reminder.id, updatedReminder).then((
                 _,
               ) {
                 if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  Navigator.pop(currentContext);
+                  ScaffoldMessenger.of(currentContext).showSnackBar(
                     const SnackBar(content: Text('Reminder updated')),
                   );
                 }
