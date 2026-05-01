@@ -34,7 +34,9 @@ class LabRequest {
       status: data['status'] ?? 'pending',
       result: data['result'] ?? '',
       orderedAt: (data['orderedAt'] as Timestamp).toDate(),
-      completedAt: data['completedAt'] != null ? (data['completedAt'] as Timestamp).toDate() : null,
+      completedAt: data['completedAt'] != null
+          ? (data['completedAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -47,7 +49,9 @@ class LabRequest {
       'status': status,
       'result': result,
       'orderedAt': Timestamp.fromDate(orderedAt),
-      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+      'completedAt': completedAt != null
+          ? Timestamp.fromDate(completedAt!)
+          : null,
     };
   }
 }

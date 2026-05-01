@@ -11,7 +11,11 @@ class GPPatientSummaryScreen extends StatefulWidget {
   final Patient patient;
   final String appointmentId;
 
-  const GPPatientSummaryScreen({super.key, required this.patient, required this.appointmentId});
+  const GPPatientSummaryScreen({
+    super.key,
+    required this.patient,
+    required this.appointmentId,
+  });
 
   @override
   State<GPPatientSummaryScreen> createState() => _GPPatientSummaryScreenState();
@@ -40,7 +44,10 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.patient.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            widget.patient.name,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           backgroundColor: const Color(0xFF004D40),
           foregroundColor: Colors.white,
           actions: [
@@ -52,7 +59,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                   context: context,
                   isScrollControlled: true,
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
                   ),
                   builder: (context) => GPMedicalCertificateForm(
                     appointmentId: widget.appointmentId,
@@ -110,7 +119,10 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
               },
               backgroundColor: const Color(0xFF004D40),
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Add Entry', style: TextStyle(color: Colors.white)),
+              label: const Text(
+                'Add Entry',
+                style: TextStyle(color: Colors.white),
+              ),
             );
           },
         ),
@@ -128,9 +140,19 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Patient Summary', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF004D40))),
+              const Text(
+                'Patient Summary',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF004D40),
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(widget.patient.summary.isEmpty ? 'No summary available.' : widget.patient.summary),
+              Text(
+                widget.patient.summary.isEmpty
+                    ? 'No summary available.'
+                    : widget.patient.summary,
+              ),
             ],
           ),
         ),
@@ -138,16 +160,22 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
           child: StreamBuilder<List<Note>>(
             stream: _notesStream,
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
               final notes = snapshot.data!;
-              if (notes.isEmpty) return const Center(child: Text('No notes for this session.'));
+              if (notes.isEmpty) {
+                return const Center(child: Text('No notes for this session.'));
+              }
 
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
                   final note = notes[index];
-                  final isSickNote = note.text.contains('*** OFFICIAL MEDICAL CERTIFICATE ***');
+                  final isSickNote = note.text.contains(
+                    '*** OFFICIAL MEDICAL CERTIFICATE ***',
+                  );
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -155,7 +183,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: isSickNote ? const Color(0xFFD4AF37) : Colors.transparent, // Gold border for sick notes
+                        color: isSickNote
+                            ? const Color(0xFFD4AF37)
+                            : Colors.transparent, // Gold border for sick notes
                         width: isSickNote ? 2 : 0,
                       ),
                     ),
@@ -171,22 +201,37 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                               Row(
                                 children: [
                                   if (isSickNote) ...[
-                                    const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 16),
+                                    const Icon(
+                                      Icons.verified,
+                                      color: Color(0xFFD4AF37),
+                                      size: 16,
+                                    ),
                                     const SizedBox(width: 4),
                                     const Text(
                                       'MEDICAL CERTIFICATE',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFD4AF37),
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                   ],
                                   Text(
                                     '${note.createdAt.toLocal()}'.split('.')[0],
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
                                 ],
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  size: 20,
+                                  color: Colors.redAccent,
+                                ),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                                 onPressed: () => repository.deleteNote(note.id),
@@ -194,7 +239,14 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text(note.text, style: TextStyle(fontSize: 14, height: 1.4, color: isSickNote ? Colors.black87 : Colors.black)),
+                          Text(
+                            note.text,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.4,
+                              color: isSickNote ? Colors.black87 : Colors.black,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -212,9 +264,13 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
     return StreamBuilder<List<Vitals>>(
       stream: _vitalsStream,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         final vitalsList = snapshot.data!;
-        if (vitalsList.isEmpty) return const Center(child: Text('No vitals recorded yet.'));
+        if (vitalsList.isEmpty) {
+          return const Center(child: Text('No vitals recorded yet.'));
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -223,7 +279,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
             final v = vitalsList[index];
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -234,7 +292,10 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                       children: [
                         Text(
                           'Recorded on ${v.recordedAt.toLocal()}'.split('.')[0],
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF004D40)),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF004D40),
+                          ),
                         ),
                         const Icon(Icons.history, size: 16, color: Colors.grey),
                       ],
@@ -245,9 +306,21 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                       runSpacing: 10,
                       children: [
                         _buildVitalItem(Icons.compress, 'BP', v.bloodPressure),
-                        _buildVitalItem(Icons.thermostat, 'Temp', '${v.temperature}°C'),
-                        _buildVitalItem(Icons.favorite, 'HR', '${v.heartRate} bpm'),
-                        _buildVitalItem(Icons.monitor_weight, 'Weight', '${v.weight} kg'),
+                        _buildVitalItem(
+                          Icons.thermostat,
+                          'Temp',
+                          '${v.temperature}°C',
+                        ),
+                        _buildVitalItem(
+                          Icons.favorite,
+                          'HR',
+                          '${v.heartRate} bpm',
+                        ),
+                        _buildVitalItem(
+                          Icons.monitor_weight,
+                          'Weight',
+                          '${v.weight} kg',
+                        ),
                       ],
                     ),
                   ],
@@ -276,8 +349,11 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => GPConsultationForm(appointmentId: widget.appointmentId),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) =>
+          GPConsultationForm(appointmentId: widget.appointmentId),
     );
   }
 
@@ -285,7 +361,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => VitalsForm(patientId: widget.patient.id),
     );
   }
@@ -294,9 +372,13 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
     return StreamBuilder<List<LabRequest>>(
       stream: _labStream,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         final requests = snapshot.data!;
-        if (requests.isEmpty) return const Center(child: Text('No lab tests ordered yet.'));
+        if (requests.isEmpty) {
+          return const Center(child: Text('No lab tests ordered yet.'));
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -308,21 +390,48 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: ExpansionTile(
-                leading: Icon(isCompleted ? Icons.check_circle : Icons.pending, color: isCompleted ? Colors.green : Colors.orange),
-                title: Text(r.testType, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Ordered on: ${r.orderedAt.toLocal()}'.split('.')[0], style: const TextStyle(fontSize: 12)),
+                leading: Icon(
+                  isCompleted ? Icons.check_circle : Icons.pending,
+                  color: isCompleted ? Colors.green : Colors.orange,
+                ),
+                title: Text(
+                  r.testType,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Ordered on: ${r.orderedAt.toLocal()}'.split('.')[0],
+                  style: const TextStyle(fontSize: 12),
+                ),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Result:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal[800])),
+                        Text(
+                          'Result:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal[800],
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(isCompleted ? r.result : 'Awaiting results from laboratory...'),
+                        Text(
+                          isCompleted
+                              ? r.result
+                              : 'Awaiting results from laboratory...',
+                        ),
                         if (isCompleted) ...[
                           const SizedBox(height: 8),
-                          Text('Completed at: ${r.completedAt?.toLocal()}'.split('.')[0], style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                          Text(
+                            'Completed at: ${r.completedAt?.toLocal()}'.split(
+                              '.',
+                            )[0],
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ],
                       ],
                     ),
@@ -351,7 +460,10 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () async {
               if (controller.text.trim().isEmpty) return;
@@ -363,10 +475,13 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                 testType: controller.text.trim(),
                 orderedAt: DateTime.now(),
               );
+              final currentContext = context;
               await repository.addLabRequest(request);
-              if (mounted) Navigator.pop(context);
+              if (mounted) Navigator.pop(currentContext);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF004D40)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF004D40),
+            ),
             child: const Text('Order Test'),
           ),
         ],
@@ -385,7 +500,9 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
         final historyAppts = results?[0] as List<Appointment>? ?? [];
         final allNotes = results?[1] as List<Note>? ?? [];
 
-        final pastAppts = historyAppts.where((a) => a.id != widget.appointmentId).toList();
+        final pastAppts = historyAppts
+            .where((a) => a.id != widget.appointmentId)
+            .toList();
 
         if (pastAppts.isEmpty) {
           return const Center(child: Text('No past appointments found.'));
@@ -396,16 +513,25 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
           itemCount: pastAppts.length,
           itemBuilder: (context, index) {
             final appt = pastAppts[index];
-            final apptNotes = allNotes.where((n) => n.appointmentId == appt.id).toList();
+            final apptNotes = allNotes
+                .where((n) => n.appointmentId == appt.id)
+                .toList();
 
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: ExpansionTile(
-                title: Text('Session: ${appt.time.toLocal()}'.split('.')[0], style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(
+                  'Session: ${appt.time.toLocal()}'.split('.')[0],
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text('Status: ${appt.status}'),
                 leading: Icon(
-                  appt.status == 'completed' ? Icons.check_circle : Icons.history,
-                  color: appt.status == 'completed' ? Colors.green : Colors.grey,
+                  appt.status == 'completed'
+                      ? Icons.check_circle
+                      : Icons.history,
+                  color: appt.status == 'completed'
+                      ? Colors.green
+                      : Colors.grey,
                 ),
                 children: [
                   if (apptNotes.isEmpty)
@@ -414,10 +540,14 @@ class _GPPatientSummaryScreenState extends State<GPPatientSummaryScreen> {
                       child: Text('No notes for this session.'),
                     )
                   else
-                    ...apptNotes.map((n) => ListTile(
-                          title: Text(n.text),
-                          subtitle: Text(n.createdAt.toLocal().toString().split('.')[0]),
-                        )),
+                    ...apptNotes.map(
+                      (n) => ListTile(
+                        title: Text(n.text),
+                        subtitle: Text(
+                          n.createdAt.toLocal().toString().split('.')[0],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             );

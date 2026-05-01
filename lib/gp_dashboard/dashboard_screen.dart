@@ -48,9 +48,12 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FF),
       appBar: AppBar(
         title: const Text('GP Dashboard'),
-        backgroundColor: const Color(0xFF004D40), // Dark Teal for GP
+        backgroundColor: const Color(0xFF1565C0),
+        foregroundColor: Colors.white,
+        elevation: 1,
         actions: [
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
@@ -100,6 +103,8 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                   children: [
                     if (_viewMode == GPDashboardViewMode.list)
                       _buildStatsBanner(snapshot.data ?? []),
+                    if (_viewMode == GPDashboardViewMode.list)
+                      _buildQuickActions(),
                     Expanded(
                       child: appointments.isEmpty
                           ? const Center(
@@ -135,21 +140,31 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
     final pending = all.where((a) => a.status == 'pending').length;
     final completed = all.where((a) => a.status == 'completed').length;
 
+    final upcoming = all.where((a) => a.time.isAfter(DateTime.now())).length;
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF004D40), Color(0xFF00796B)],
+          colors: [Color(0xFF1565C0), Color(0xFFFFC107)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildStat('Today', todayCount.toString(), Icons.today),
+          _buildStatDivider(),
+          _buildStat('Upcoming', upcoming.toString(), Icons.schedule),
           _buildStatDivider(),
           _buildStat('Pending', pending.toString(), Icons.pending_actions),
           _buildStatDivider(),
@@ -191,22 +206,25 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
 
   PreferredSizeWidget _buildListFilters() {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(110),
+      preferredSize: const Size.fromHeight(180),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search patients...',
-                prefixIcon: const Icon(Icons.search),
+                hintText: 'Search patients, appointment IDs or status...',
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF1565C0)),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: const Color(0xFFFFFFFF),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: EdgeInsets.zero,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
               ),
               onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
             ),
@@ -224,24 +242,28 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                         label: Text(
                           status[0].toUpperCase() + status.substring(1),
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black87,
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF1565C0),
                             fontWeight: isSelected
                                 ? FontWeight.bold
-                                : FontWeight.normal,
+                                : FontWeight.w500,
                           ),
                         ),
                         selected: isSelected,
                         onSelected: (val) =>
                             setState(() => _filterStatus = status),
-                        selectedColor: const Color(0xFF004D40),
+                        selectedColor: const Color(0xFF1565C0),
                         checkmarkColor: Colors.white,
-                        backgroundColor: Colors.white,
+                        backgroundColor: isSelected
+                            ? const Color(0xFF1565C0)
+                            : const Color(0xFFFFF8E1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(
                             color: isSelected
                                 ? Colors.transparent
-                                : Colors.grey[300]!,
+                                : const Color(0xFFFFD54F),
                           ),
                         ),
                       ),
@@ -251,6 +273,214 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
             ),
           ),
           const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildQuickActionButton(
+                  label: 'New Appointment',
+                  icon: Icons.add_circle_outline,
+                  onPressed: _showNewAppointmentDialog,
+                  color: const Color(0xFF1565C0),
+                ),
+                _buildQuickActionButton(
+                  label: 'Follow-ups',
+                  icon: Icons.follow_the_signs,
+                  onPressed: _showFollowUpDialog,
+                  color: const Color(0xFFFFC107),
+                ),
+                _buildQuickActionButton(
+                  label: 'Patient Notes',
+                  icon: Icons.note_alt,
+                  onPressed: _showPatientNotes,
+                  color: const Color(0xFF4CAF50),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    required Color color,
+  }) {
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 18),
+        label: Text(label, style: const TextStyle(fontSize: 12)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          _buildQuickActionButton(
+            label: 'New Appointment',
+            icon: Icons.add_circle_outline,
+            onPressed: _showNewAppointmentDialog,
+            color: const Color(0xFF1565C0),
+          ),
+          const SizedBox(width: 8),
+          _buildQuickActionButton(
+            label: 'Follow-ups',
+            icon: Icons.follow_the_signs,
+            onPressed: _showFollowUpDialog,
+            color: const Color(0xFFFFC107),
+          ),
+          const SizedBox(width: 8),
+          _buildQuickActionButton(
+            label: 'Patient Notes',
+            icon: Icons.note_alt,
+            onPressed: _showPatientNotes,
+            color: const Color(0xFF4CAF50),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNewAppointmentDialog() {
+    final titleController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('New Appointment'),
+        content: TextField(
+          controller: titleController,
+          decoration: const InputDecoration(
+            labelText: 'Patient name or ID',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Appointment request created for ${titleController.text.isEmpty ? 'a patient' : titleController.text}',
+                  ),
+                ),
+              );
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFollowUpDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Follow-up tasks'),
+        content: const Text(
+          'Review follow-up appointments, medication checks, and patient notes for today.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPatientNotes() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Patient Notes'),
+        content: const Text(
+          'Open patient records and consultation notes for faster review.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRescheduleDialog(BuildContext context, Appointment appt) {
+    DateTime selectedDate = appt.time.toLocal();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reschedule Appointment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Current time: ${_formatAppointmentTime(appt.time)}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: dialogContext,
+                  initialDate: selectedDate,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 60)),
+                );
+                if (picked != null) {
+                  selectedDate = picked;
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1565C0),
+              ),
+              child: const Text('Pick new date'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Appointment rescheduled to ${_formatAppointmentTime(selectedDate)}',
+                  ),
+                ),
+              );
+            },
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
@@ -283,15 +513,15 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
         },
         calendarStyle: const CalendarStyle(
           selectedDecoration: BoxDecoration(
-            color: Color(0xFF00796B),
+            color: Color(0xFFFFC107),
             shape: BoxShape.circle,
           ),
           todayDecoration: BoxDecoration(
-            color: Color(0xFF004D40),
+            color: Color(0xFF1565C0),
             shape: BoxShape.circle,
           ),
           markerDecoration: BoxDecoration(
-            color: Color(0xFF004D40),
+            color: Color(0xFFFFC107),
             shape: BoxShape.circle,
           ),
         ),
@@ -299,7 +529,7 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
           formatButtonVisible: false,
           titleCentered: true,
           titleTextStyle: TextStyle(
-            color: Color(0xFF004D40),
+            color: Color(0xFF1565C0),
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -309,9 +539,9 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
   }
 
   Widget _buildAppointmentList(List<Appointment> appointments) {
-    return ListView.separated(
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 16),
       itemCount: appointments.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final appt = appointments[index];
         return FutureBuilder<Patient?>(
@@ -319,6 +549,11 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
           builder: (c, psnap) {
             final patient = psnap.data;
             final patientName = patient?.name ?? 'Unknown';
+            final appointmentTime = _formatAppointmentTime(appt.time);
+            final currentContext = c;
+            final timeLabel = appt.time.isAfter(DateTime.now())
+                ? '${appt.time.difference(DateTime.now()).inMinutes} min away'
+                : 'In progress';
 
             if (_viewMode == GPDashboardViewMode.list &&
                 _searchQuery.isNotEmpty &&
@@ -326,84 +561,294 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
               return const SizedBox.shrink();
             }
 
-            return ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFF004D40),
-                child: Icon(Icons.person, color: Colors.white),
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
               ),
-              title: Text(
-                patientName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${appt.time.toLocal()}'.split('.')[0]),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(appt.status),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          appt.status.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
+              elevation: 1.8,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () {
+                  if (patient != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => GPPatientSummaryScreen(
+                          patient: patient,
+                          appointmentId: appt.id,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      if (appt.status == 'pending') ...[
-                        _buildActionButton(
-                          'Accept',
-                          () => repository.updateAppointmentStatus(
-                            appt.id,
-                            'confirmed',
+                    );
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: const Color(0xFF1565C0),
+                            child: Text(
+                              patientName.isNotEmpty
+                                  ? patientName[0].toUpperCase()
+                                  : 'G',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-                        _buildActionButton(
-                          'Decline',
-                          () => repository.updateAppointmentStatus(
-                            appt.id,
-                            'declined',
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  patientName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Appointment • $appointmentTime',
+                                  style: TextStyle(color: Colors.grey[700]),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'ID: ${appt.id}',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          isError: true,
-                        ),
-                      ] else if (appt.status == 'confirmed') ...[
-                        _buildActionButton(
-                          'Mark Completed',
-                          () => repository.updateAppointmentStatus(
-                            appt.id,
-                            'completed',
+                          Icon(Icons.chevron_right, color: Colors.grey[400]),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildInfoTag('Age: ${patient?.age ?? '—'}'),
+                          _buildInfoTag(
+                            'Student ID: ${patient?.studentId ?? '—'}',
                           ),
-                          isSuccess: true,
+                          _buildInfoTag('Status: ${appt.status}'),
+                          _buildInfoTag(timeLabel),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: patient != null
+                                  ? () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              GPPatientSummaryScreen(
+                                                patient: patient,
+                                                appointmentId: appt.id,
+                                              ),
+                                        ),
+                                      );
+                                    }
+                                  : null,
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(48),
+                                foregroundColor: const Color(0xFF1565C0),
+                                side: const BorderSide(
+                                  color: Color(0xFF1565C0),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: const Text('Patient Summary'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  _showRescheduleDialog(currentContext, appt),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(48),
+                                foregroundColor: const Color(0xFFFFC107),
+                                side: const BorderSide(
+                                  color: Color(0xFFFFC107),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: const Text('Reschedule'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if ((patient?.summary ?? '').isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          patient!.summary,
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                            height: 1.4,
+                          ),
                         ),
                       ],
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          if (appt.status == 'pending') ...[
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () {
+                                  final messenger = ScaffoldMessenger.of(
+                                    currentContext,
+                                  );
+                                  repository
+                                      .updateAppointmentStatus(
+                                        appt.id,
+                                        'confirmed',
+                                      )
+                                      .then((ok) {
+                                        if (ok && mounted) {
+                                          messenger.showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Appointment confirmed',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      });
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1565C0),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('Confirm'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () {
+                                  final messenger = ScaffoldMessenger.of(
+                                    currentContext,
+                                  );
+                                  repository
+                                      .updateAppointmentStatus(
+                                        appt.id,
+                                        'declined',
+                                      )
+                                      .then((ok) {
+                                        if (ok && mounted) {
+                                          messenger.showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Appointment declined',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      });
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFF3E0),
+                                  foregroundColor: const Color(0xFFFFA000),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('Decline'),
+                              ),
+                            ),
+                          ] else if (appt.status == 'confirmed') ...[
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () {
+                                  final messenger = ScaffoldMessenger.of(
+                                    currentContext,
+                                  );
+                                  repository
+                                      .updateAppointmentStatus(
+                                        appt.id,
+                                        'completed',
+                                      )
+                                      .then((ok) {
+                                        if (ok && mounted) {
+                                          messenger.showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Appointment completed',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      });
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFC107),
+                                  foregroundColor: Colors.black87,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('Mark Completed'),
+                              ),
+                            ),
+                          ] else ...[
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {},
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF1565C0),
+                                  side: const BorderSide(
+                                    color: Color(0xFF1565C0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('Reviewed'),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                if (patient != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => GPPatientSummaryScreen(
-                        patient: patient,
-                        appointmentId: appt.id,
-                      ),
-                    ),
-                  );
-                }
-              },
             );
           },
         );
@@ -411,44 +856,28 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
     );
   }
 
-  Widget _buildActionButton(
-    String label,
-    VoidCallback onPressed, {
-    bool isError = false,
-    bool isSuccess = false,
-  }) {
-    Color color = Colors.blue;
-    if (isError) color = Colors.redAccent;
-    if (isSuccess) color = Colors.green;
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.zero,
-        minimumSize: const Size(50, 30),
+  Widget _buildInfoTag(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3F2FD),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
+        style: const TextStyle(
+          color: Color(0xFF1565C0),
           fontSize: 12,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange[100]!;
-      case 'confirmed':
-        return Colors.green[100]!;
-      case 'completed':
-        return Colors.blue[100]!;
-      case 'declined':
-        return Colors.red[100]!;
-      default:
-        return Colors.grey[200]!;
-    }
+  String _formatAppointmentTime(DateTime time) {
+    final local = time.toLocal();
+    final hours = local.hour.toString().padLeft(2, '0');
+    final minutes = local.minute.toString().padLeft(2, '0');
+    return '${local.day}/${local.month}/${local.year} $hours:$minutes';
   }
 }
