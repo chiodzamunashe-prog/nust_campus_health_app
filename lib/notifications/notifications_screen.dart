@@ -156,7 +156,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           controller: _tabController,
           indicator: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
-            color: Colors.white.withOpacity(0.25),
+            color: Color.fromRGBO(255, 255, 255, 0.25),
           ),
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
@@ -194,7 +194,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           itemCount: notifications.length + 1,
-          separatorBuilder: (_, __) => const SizedBox(height: 14),
+          separatorBuilder: (context, _) => const SizedBox(height: 14),
           itemBuilder: (context, index) {
             if (index == 0) {
               return _buildNotificationsHeader(
@@ -224,19 +224,19 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          hasRealData ? 'Latest updates' : 'Sample notifications',
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          'Latest updates',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.3,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
-          hasRealData
-              ? 'Stay informed about your health schedule and results.'
-              : 'These preview cards show how notifications will look when your app is active.',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
+          'Stay informed about your health schedule and results.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.grey.shade600,
+            height: 1.5,
+          ),
         ),
         const SizedBox(height: 18),
       ],
@@ -250,7 +250,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   }) {
     final backgroundColor = notification.isRead
         ? Colors.white
-        : Colors.blue.shade50.withOpacity(0.9);
+        : Color.fromRGBO(173, 216, 230, 0.9);
     final iconColor = _getNotificationIconColor(notification.type);
 
     return Container(
@@ -260,7 +260,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Color.fromRGBO(0, 0, 0, 0.04),
             blurRadius: 14,
             offset: const Offset(0, 8),
           ),
@@ -273,7 +273,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.15),
+              color: iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
@@ -406,7 +406,37 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _buildRemindersHeader(context, hasData),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton.icon(
+                onPressed: () => _showCreateReminderDialog(context),
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Create reminder'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  backgroundColor: const Color(0xFF3366FF),
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (activeReminders.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Active reminders',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            if (activeReminders.isNotEmpty) const SizedBox(height: 12),
             ...activeReminders.map(
               (reminder) => _buildReminderTile(
                 context,
@@ -428,13 +458,15 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               ),
             ],
             if (inactiveReminders.isNotEmpty) ...[
-              const SizedBox(height: 24),
+              if (activeReminders.isNotEmpty) const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  hasData ? 'Inactive Reminders' : 'Preview reminders',
+                  'Inactive reminders',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                    color: Colors.grey.shade700,
                   ),
                 ),
               ),
@@ -448,21 +480,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 ),
               ),
             ],
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton.icon(
-                onPressed: () => _showCreateReminderDialog(context),
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Create new reminder'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 20),
           ],
         );
@@ -475,19 +492,19 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          hasData ? 'Your wellness schedule' : 'Reminder preview',
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          'Your wellness schedule',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.3,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
-          hasData
-              ? 'Manage medication, appointments, and health goals in one place.'
-              : 'These cards demonstrate how reminders look in your dashboard.',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
+          'Manage medication, appointments, and health goals in one place.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.grey.shade600,
+            height: 1.5,
+          ),
         ),
       ],
     );
@@ -508,7 +525,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Color.fromRGBO(0, 0, 0, 0.03),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -526,7 +543,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   height: 42,
                   decoration: BoxDecoration(
                     color: reminder.isActive
-                        ? const Color(0xFF3366FF).withOpacity(0.12)
+                        ? const Color(0xFF3366FF).withValues(alpha: 0.12)
                         : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -555,7 +572,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     onChanged: (value) {
                       repository.toggleReminder(reminder.id, value);
                     },
-                    activeColor: const Color(0xFF3366FF),
+                    activeThumbColor: const Color(0xFF3366FF),
                   ),
               ],
             ),
@@ -586,7 +603,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   ),
                   decoration: BoxDecoration(
                     color: reminder.isActive
-                        ? const Color(0xFF00C6FF).withOpacity(0.16)
+                        ? const Color(0xFF00C6FF).withValues(alpha: 0.16)
                         : Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -637,96 +654,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   ],
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showNotificationDetail(
-    BuildContext context,
-    notif.Notification notification,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: _getNotificationIconColor(
-                      notification.type,
-                    ).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    _getNotificationIcon(notification.type),
-                    color: _getNotificationIconColor(notification.type),
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        notification.title,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _formatTime(notification.createdAt),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Text(
-              notification.message,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                TextButton(
-                  onPressed: () {
-                    _repository.deleteNotification(notification.id).then((_) {
-                      _refreshBadge();
-                    });
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Delete'),
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -804,10 +731,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 createdAt: DateTime.now(),
               );
               _repository.createReminder(reminder).then((_) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Reminder created')),
-                );
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Reminder created')),
+                  );
+                }
               });
             },
             child: const Text('Create'),
@@ -872,10 +801,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               _repository.updateReminder(reminder.id, updatedReminder).then((
                 _,
               ) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Reminder updated')),
-                );
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Reminder updated')),
+                  );
+                }
               });
             },
             child: const Text('Update'),
@@ -943,7 +874,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   }
 
   Future<void> _refreshBadge() async {
-    final unreadCount = await _repository.getUnreadCount(_currentUserId);
-    await _notificationService.updateBadgeCount(unreadCount);
+    try {
+      final unreadCount = await _repository.getUnreadCount(_currentUserId);
+      await _notificationService.updateBadgeCount(unreadCount);
+    } catch (e) {
+      // Handle error silently
+    }
   }
 }

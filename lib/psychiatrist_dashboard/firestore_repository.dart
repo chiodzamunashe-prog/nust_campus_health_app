@@ -9,7 +9,8 @@ import '../lab_module/models.dart';
 class FirestoreRepository implements DashboardRepository {
   final FirebaseFirestore _db;
 
-  FirestoreRepository({FirebaseFirestore? firestore}) : _db = firestore ?? FirebaseFirestore.instance;
+  FirestoreRepository({FirebaseFirestore? firestore})
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<Note> addNote(String appointmentId, String text) async {
@@ -18,7 +19,12 @@ class FirestoreRepository implements DashboardRepository {
       'text': text,
       'createdAt': FieldValue.serverTimestamp(),
     });
-    return Note(id: doc.id, appointmentId: appointmentId, text: text, createdAt: DateTime.now());
+    return Note(
+      id: doc.id,
+      appointmentId: appointmentId,
+      text: text,
+      createdAt: DateTime.now(),
+    );
   }
 
   @override
@@ -46,7 +52,13 @@ class FirestoreRepository implements DashboardRepository {
     final snap = await _db.collection('patients').doc(id).get();
     if (!snap.exists) return null;
     final data = snap.data()!;
-    return Patient(id: snap.id, name: data['name'] ?? '', age: data['age'] ?? 0, studentId: data['studentId'] ?? '', summary: data['summary'] ?? '');
+    return Patient(
+      id: snap.id,
+      name: data['name'] ?? '',
+      age: data['age'] ?? 0,
+      studentId: data['studentId'] ?? '',
+      summary: data['summary'] ?? '',
+    );
   }
 
   @override
@@ -56,19 +68,28 @@ class FirestoreRepository implements DashboardRepository {
         .where('appointmentId', isEqualTo: appointmentId)
         .orderBy('createdAt', descending: false)
         .snapshots()
-        .map((q) => q.docs
-            .map((d) => Note(
-                id: d.id,
-                appointmentId: d['appointmentId'],
-                text: d['text'],
-                createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now()))
-            .toList());
+        .map(
+          (q) => q.docs
+              .map(
+                (d) => Note(
+                  id: d.id,
+                  appointmentId: d['appointmentId'],
+                  text: d['text'],
+                  createdAt:
+                      (d['createdAt'] as Timestamp?)?.toDate() ??
+                      DateTime.now(),
+                ),
+              )
+              .toList(),
+        );
   }
 
   @override
   Stream<List<Appointment>> fetchAppointments() {
     return _db.collection('appointments').snapshots().map((snapshot) {
-      return snapshot.docs.map<Appointment>((doc) => Appointment.fromFirestore(doc)).toList();
+      return snapshot.docs
+          .map<Appointment>((doc) => Appointment.fromFirestore(doc))
+          .toList();
     });
   }
 
@@ -83,14 +104,21 @@ class FirestoreRepository implements DashboardRepository {
         .where('time', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map<Appointment>((doc) => Appointment.fromFirestore(doc)).toList();
-    });
+          return snapshot.docs
+              .map<Appointment>((doc) => Appointment.fromFirestore(doc))
+              .toList();
+        });
   }
 
   @override
-  Future<bool> updateAppointmentStatus(String appointmentId, String status) async {
+  Future<bool> updateAppointmentStatus(
+    String appointmentId,
+    String status,
+  ) async {
     try {
-      await _db.collection('appointments').doc(appointmentId).update({'status': status});
+      await _db.collection('appointments').doc(appointmentId).update({
+        'status': status,
+      });
       return true;
     } catch (e) {
       return false;
@@ -105,29 +133,38 @@ class FirestoreRepository implements DashboardRepository {
         .orderBy('time', descending: true)
         .get();
     return q.docs
-        .map((d) => Appointment(
+        .map(
+          (d) => Appointment(
             id: d.id,
             patientId: d['patientId'],
             time: (d['time'] as Timestamp).toDate(),
-            status: d['status'] ?? 'pending'))
+            status: d['status'] ?? 'pending',
+          ),
+        )
         .toList();
   }
 
   @override
   Future<List<Note>> fetchAllNotesByPatient(String patientId) async {
-    final appointments = await _db.collection('appointments').where('patientId', isEqualTo: patientId).get();
+    final appointments = await _db
+        .collection('appointments')
+        .where('patientId', isEqualTo: patientId)
+        .get();
     if (appointments.docs.isEmpty) return [];
-    
+
     final apptIds = appointments.docs.map((d) => d.id).toList();
     final notes = await _db.collection('notes').get();
     return notes.docs
-      .where((d) => apptIds.contains(d['appointmentId']))
-      .map((d) => Note(
-        id: d.id,
-        appointmentId: d['appointmentId'],
-        text: d['text'],
-        createdAt: (d['createdAt'] as Timestamp).toDate(),
-      )).toList();
+        .where((d) => apptIds.contains(d['appointmentId']))
+        .map(
+          (d) => Note(
+            id: d.id,
+            appointmentId: d['appointmentId'],
+            text: d['text'],
+            createdAt: (d['createdAt'] as Timestamp).toDate(),
+          ),
+        )
+        .toList();
   }
 
   @override
@@ -146,7 +183,11 @@ class FirestoreRepository implements DashboardRepository {
         .collection('appointments')
         .where('patientId', isEqualTo: patientId)
         .snapshots()
-        .map((s) => s.docs.map<Appointment>((d) => Appointment.fromFirestore(d)).toList());
+        .map(
+          (s) => s.docs
+              .map<Appointment>((d) => Appointment.fromFirestore(d))
+              .toList(),
+        );
   }
 
   @override
@@ -160,15 +201,17 @@ class FirestoreRepository implements DashboardRepository {
         .where('time', isLessThanOrEqualTo: Timestamp.fromDate(end))
         .get();
 
-    final bookedTimes = snapshot.docs.map((d) => (d['time'] as Timestamp).toDate()).toList();
+    final bookedTimes = snapshot.docs
+        .map((d) => (d['time'] as Timestamp).toDate())
+        .toList();
 
     List<DateTime> slots = [];
     DateTime current = DateTime(day.year, day.month, day.day, 9, 0);
     DateTime limit = DateTime(day.year, day.month, day.day, 16, 0);
 
     while (current.isBefore(limit)) {
-      final isBooked = bookedTimes.any((bt) => 
-        bt.hour == current.hour && bt.minute == current.minute
+      final isBooked = bookedTimes.any(
+        (bt) => bt.hour == current.hour && bt.minute == current.minute,
       );
       if (!isBooked) slots.add(current);
       current = current.add(const Duration(minutes: 30));
@@ -194,9 +237,14 @@ class FirestoreRepository implements DashboardRepository {
   }
 
   @override
-  Future<bool> updatePrescriptionStatus(String prescriptionId, String status) async {
+  Future<bool> updatePrescriptionStatus(
+    String prescriptionId,
+    String status,
+  ) async {
     try {
-      await _db.collection('prescriptions').doc(prescriptionId).update({'status': status});
+      await _db.collection('prescriptions').doc(prescriptionId).update({
+        'status': status,
+      });
       return true;
     } catch (e) {
       return false;
@@ -236,14 +284,18 @@ class FirestoreRepository implements DashboardRepository {
   @override
   Stream<List<Medication>> fetchInventory() {
     return _db.collection('inventory').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => Medication.fromMap(doc.data(), doc.id)).toList();
+      return snapshot.docs
+          .map((doc) => Medication.fromMap(doc.data(), doc.id))
+          .toList();
     });
   }
 
   @override
   Future<bool> updateInventoryStock(String medicationId, int newStock) async {
     try {
-      await _db.collection('inventory').doc(medicationId).update({'stock': newStock});
+      await _db.collection('inventory').doc(medicationId).update({
+        'stock': newStock,
+      });
       return true;
     } catch (e) {
       return false;
@@ -303,15 +355,35 @@ class FirestoreRepository implements DashboardRepository {
       _db.collection('prescriptions').snapshots(),
       _db.collection('inventory').snapshots(),
       _db.collection('patients').snapshots(),
-      (QuerySnapshot appts, QuerySnapshot labs, QuerySnapshot presc, QuerySnapshot inv, QuerySnapshot patients) {
+      (
+        QuerySnapshot appts,
+        QuerySnapshot labs,
+        QuerySnapshot presc,
+        QuerySnapshot inv,
+        QuerySnapshot patients,
+      ) {
         return {
           'totalAppointments': appts.size,
-          'pendingAppointments': appts.docs.where((d) => d['status'] == 'pending').length,
-          'pendingLabs': labs.docs.where((d) => d['status'] == 'pending').length,
-          'pendingPrescriptions': presc.docs.where((d) => d['status'] == 'pending').length,
+          'pendingAppointments': appts.docs
+              .where((d) => d['status'] == 'pending')
+              .length,
+          'pendingLabs': labs.docs
+              .where((d) => d['status'] == 'pending')
+              .length,
+          'pendingPrescriptions': presc.docs
+              .where((d) => d['status'] == 'pending')
+              .length,
           'lowStockMeds': inv.docs.where((d) => d['stock'] < 50).length,
           'totalPatients': patients.size,
-          'appointmentTrends': [10, 15, 12, 20, 18, 22, 19], // Placeholder for actual time-series logic
+          'appointmentTrends': [
+            10,
+            15,
+            12,
+            20,
+            18,
+            22,
+            19,
+          ], // Placeholder for actual time-series logic
         };
       },
     );
@@ -329,22 +401,50 @@ class Rx {
     R Function(T1, T2, T3, T4, T5) combiner,
   ) {
     late StreamController<R> controller;
-    controller = StreamController<R>.broadcast(onListen: () {
-      T1? v1; T2? v2; T3? v3; T4? v4; T5? v5;
-      bool b1 = false, b2 = false, b3 = false, b4 = false, b5 = false;
+    controller = StreamController<R>.broadcast(
+      onListen: () {
+        T1? v1;
+        T2? v2;
+        T3? v3;
+        T4? v4;
+        T5? v5;
+        bool b1 = false, b2 = false, b3 = false, b4 = false, b5 = false;
 
-      void update() {
-        if (b1 && b2 && b3 && b4 && b5) {
-          controller.add(combiner(v1!, v2!, v3!, v4!, v5!));
+        void update() {
+          if (b1 && b2 && b3 && b4 && b5) {
+            controller.add(
+              combiner(v1 as T1, v2 as T2, v3 as T3, v4 as T4, v5 as T5),
+            );
+          }
         }
-      }
 
-      s1.listen((v) { v1 = v; b1 = true; update(); });
-      s2.listen((v) { v2 = v; b2 = true; update(); });
-      s3.listen((v) { v3 = v; b3 = true; update(); });
-      s4.listen((v) { v4 = v; b4 = true; update(); });
-      s5.listen((v) { v5 = v; b5 = true; update(); });
-    });
+        s1.listen((v) {
+          v1 = v;
+          b1 = true;
+          update();
+        });
+        s2.listen((v) {
+          v2 = v;
+          b2 = true;
+          update();
+        });
+        s3.listen((v) {
+          v3 = v;
+          b3 = true;
+          update();
+        });
+        s4.listen((v) {
+          v4 = v;
+          b4 = true;
+          update();
+        });
+        s5.listen((v) {
+          v5 = v;
+          b5 = true;
+          update();
+        });
+      },
+    );
     return controller.stream;
   }
 }

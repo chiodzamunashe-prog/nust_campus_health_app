@@ -21,7 +21,6 @@ import 'appointments/booking_screen.dart';
 import 'appointments/my_appointments_screen.dart';
 import 'prescriptions/prescription_form_screen.dart';
 import 'prescriptions/student_prescriptions_screen.dart';
-import 'models/prescription_model.dart';
 import 'firebase_options.dart';
 import 'notifications/notification_service.dart';
 import 'psychiatrist_dashboard/models.dart';
