@@ -20,7 +20,7 @@ class _PsychiatristDashboardScreenState
   String _searchQuery = '';
   String _filterStatus = 'all';
   DashboardViewMode _viewMode = DashboardViewMode.list;
-  
+
   // Calendar State
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
@@ -34,10 +34,10 @@ class _PsychiatristDashboardScreenState
 
   void _onViewToggle() {
     setState(() {
-      _viewMode = _viewMode == DashboardViewMode.list 
-          ? DashboardViewMode.calendar 
+      _viewMode = _viewMode == DashboardViewMode.list
+          ? DashboardViewMode.calendar
           : DashboardViewMode.list;
-      
+
       // Update stream if switching to calendar
       if (_viewMode == DashboardViewMode.calendar && _selectedDay != null) {
         _appointmentsStream = repository.fetchAppointmentsForDay(_selectedDay!);
@@ -59,12 +59,19 @@ class _PsychiatristDashboardScreenState
             onPressed: () => Navigator.pushNamed(context, '/chat_list'),
           ),
           IconButton(
-            icon: Icon(_viewMode == DashboardViewMode.list ? Icons.calendar_month : Icons.list),
+            icon: Icon(
+              _viewMode == DashboardViewMode.list
+                  ? Icons.calendar_month
+                  : Icons.list,
+            ),
             onPressed: _onViewToggle,
-            tooltip: 'Switch to ${_viewMode == DashboardViewMode.list ? "Calendar" : "List"} View',
+            tooltip:
+                'Switch to ${_viewMode == DashboardViewMode.list ? "Calendar" : "List"} View',
           ),
         ],
-        bottom: _viewMode == DashboardViewMode.list ? _buildListFilters() : null,
+        bottom: _viewMode == DashboardViewMode.list
+            ? _buildListFilters()
+            : null,
       ),
       body: Column(
         children: [
@@ -83,8 +90,11 @@ class _PsychiatristDashboardScreenState
                 var appointments = snapshot.data ?? [];
 
                 // Secondary Filtering for Search and Status (if in list mode)
-                if (_viewMode == DashboardViewMode.list && _filterStatus != 'all') {
-                  appointments = appointments.where((a) => a.status == _filterStatus).toList();
+                if (_viewMode == DashboardViewMode.list &&
+                    _filterStatus != 'all') {
+                  appointments = appointments
+                      .where((a) => a.status == _filterStatus)
+                      .toList();
                 }
 
                 if (appointments.isEmpty) {
@@ -131,30 +141,39 @@ class _PsychiatristDashboardScreenState
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
-              children: ['all', 'pending', 'confirmed', 'completed', 'declined'].map((status) {
-                final isSelected = _filterStatus == status;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: FilterChip(
-                    label: Text(
-                      status[0].toUpperCase() + status.substring(1),
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              children: ['all', 'pending', 'confirmed', 'completed', 'declined']
+                  .map((status) {
+                    final isSelected = _filterStatus == status;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: FilterChip(
+                        label: Text(
+                          status[0].toUpperCase() + status.substring(1),
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        selected: isSelected,
+                        onSelected: (val) =>
+                            setState(() => _filterStatus = status),
+                        selectedColor: const Color(0xFF003366),
+                        checkmarkColor: Colors.white,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(
+                            color: isSelected
+                                ? Colors.transparent
+                                : Colors.grey[300]!,
+                          ),
+                        ),
                       ),
-                    ),
-                    selected: isSelected,
-                    onSelected: (val) => setState(() => _filterStatus = status),
-                    selectedColor: const Color(0xFF003366),
-                    checkmarkColor: Colors.white,
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey[300]!),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  })
+                  .toList(),
             ),
           ),
           const SizedBox(height: 8),
@@ -178,7 +197,9 @@ class _PsychiatristDashboardScreenState
           setState(() {
             _selectedDay = selectedDay;
             _focusedDay = focusedDay;
-            _appointmentsStream = repository.fetchAppointmentsForDay(selectedDay);
+            _appointmentsStream = repository.fetchAppointmentsForDay(
+              selectedDay,
+            );
           });
         },
         onFormatChanged: (format) {
@@ -187,14 +208,27 @@ class _PsychiatristDashboardScreenState
           }
         },
         calendarStyle: const CalendarStyle(
-          selectedDecoration: BoxDecoration(color: Color(0xFFFFB81C), shape: BoxShape.circle),
-          todayDecoration: BoxDecoration(color: Color(0xFF003366), shape: BoxShape.circle),
-          markerDecoration: BoxDecoration(color: Color(0xFF003366), shape: BoxShape.circle),
+          selectedDecoration: BoxDecoration(
+            color: Color(0xFFFFB81C),
+            shape: BoxShape.circle,
+          ),
+          todayDecoration: BoxDecoration(
+            color: Color(0xFF003366),
+            shape: BoxShape.circle,
+          ),
+          markerDecoration: BoxDecoration(
+            color: Color(0xFF003366),
+            shape: BoxShape.circle,
+          ),
         ),
         headerStyle: const HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,
-          titleTextStyle: TextStyle(color: Color(0xFF003366), fontWeight: FontWeight.bold, fontSize: 18),
+          titleTextStyle: TextStyle(
+            color: Color(0xFF003366),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
     );
@@ -203,7 +237,7 @@ class _PsychiatristDashboardScreenState
   Widget _buildAppointmentList(List<Appointment> appointments) {
     return ListView.separated(
       itemCount: appointments.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final appt = appointments[index];
         return FutureBuilder<Patient?>(
@@ -229,19 +263,45 @@ class _PsychiatristDashboardScreenState
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: _getStatusColor(appt.status),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(appt.status, style: const TextStyle(fontSize: 12)),
+                        child: Text(
+                          appt.status,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       if (appt.status == 'pending') ...[
-                        _buildActionButton('Accept', () => repository.updateAppointmentStatus(appt.id, 'confirmed')),
-                        _buildActionButton('Decline', () => repository.updateAppointmentStatus(appt.id, 'declined'), isError: true),
+                        _buildActionButton(
+                          'Accept',
+                          () => repository.updateAppointmentStatus(
+                            appt.id,
+                            'confirmed',
+                          ),
+                        ),
+                        _buildActionButton(
+                          'Decline',
+                          () => repository.updateAppointmentStatus(
+                            appt.id,
+                            'declined',
+                          ),
+                          isError: true,
+                        ),
                       ] else if (appt.status == 'confirmed') ...[
-                        _buildActionButton('Mark Completed', () => repository.updateAppointmentStatus(appt.id, 'completed'), isSuccess: true),
+                        _buildActionButton(
+                          'Mark Completed',
+                          () => repository.updateAppointmentStatus(
+                            appt.id,
+                            'completed',
+                          ),
+                          isSuccess: true,
+                        ),
                       ],
                     ],
                   ),
@@ -253,7 +313,10 @@ class _PsychiatristDashboardScreenState
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => PatientSummaryScreen(patient: patient, appointmentId: appt.id),
+                      builder: (_) => PatientSummaryScreen(
+                        patient: patient,
+                        appointmentId: appt.id,
+                      ),
                     ),
                   );
                 }
@@ -265,20 +328,33 @@ class _PsychiatristDashboardScreenState
     );
   }
 
-  Widget _buildActionButton(String label, VoidCallback onPressed, {bool isError = false, bool isSuccess = false}) {
+  Widget _buildActionButton(
+    String label,
+    VoidCallback onPressed, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
     Color color = Colors.blue;
     if (isError) color = Colors.redAccent;
     if (isSuccess) color = Colors.green;
-    return TextButton(onPressed: onPressed, child: Text(label, style: TextStyle(color: color)));
+    return TextButton(
+      onPressed: onPressed,
+      child: Text(label, style: TextStyle(color: color)),
+    );
   }
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'pending': return Colors.orange[100]!;
-      case 'confirmed': return Colors.green[100]!;
-      case 'completed': return Colors.blue[100]!;
-      case 'declined': return Colors.red[100]!;
-      default: return Colors.grey[200]!;
+      case 'pending':
+        return Colors.orange[100]!;
+      case 'confirmed':
+        return Colors.green[100]!;
+      case 'completed':
+        return Colors.blue[100]!;
+      case 'declined':
+        return Colors.red[100]!;
+      default:
+        return Colors.grey[200]!;
     }
   }
 }

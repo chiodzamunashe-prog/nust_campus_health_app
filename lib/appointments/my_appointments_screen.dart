@@ -11,9 +11,7 @@ class MyAppointmentsScreen extends StatelessWidget {
     final studentId = AuthService.instance.currentUser ?? 'student_1';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Appointments'),
-      ),
+      appBar: AppBar(title: const Text('My Appointments')),
       body: StreamBuilder<List<Appointment>>(
         stream: repository.fetchAppointmentsForStudent(studentId),
         builder: (context, snapshot) {
@@ -27,9 +25,7 @@ class MyAppointmentsScreen extends StatelessWidget {
           final appointments = snapshot.data ?? [];
 
           if (appointments.isEmpty) {
-            return const Center(
-              child: Text('You have no appointments yet.'),
-            );
+            return const Center(child: Text('You have no appointments yet.'));
           }
 
           // Sort by time (nearest first)
@@ -57,7 +53,10 @@ class MyAppointmentsScreen extends StatelessWidget {
                   ),
                   subtitle: Text('Consultation with Psychiatrist'),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: _getStatusColor(appt.status).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -82,19 +81,24 @@ class MyAppointmentsScreen extends StatelessWidget {
           // Trigger booking from here too or just use home screen
           Navigator.pushNamed(context, '/book_appointment');
         },
-        child: const Icon(Icons.add),
         backgroundColor: const Color(0xFF003366),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'pending': return Colors.orange;
-      case 'confirmed': return Colors.green;
-      case 'completed': return Colors.blue;
-      case 'declined': return Colors.red;
-      default: return Colors.grey;
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return Colors.green;
+      case 'completed':
+        return Colors.blue;
+      case 'declined':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 }

@@ -18,7 +18,7 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
   String _searchQuery = '';
   String _filterStatus = 'all';
   GPDashboardViewMode _viewMode = GPDashboardViewMode.list;
-  
+
   // Calendar State
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
@@ -32,10 +32,10 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
 
   void _onViewToggle() {
     setState(() {
-      _viewMode = _viewMode == GPDashboardViewMode.list 
-          ? GPDashboardViewMode.calendar 
+      _viewMode = _viewMode == GPDashboardViewMode.list
+          ? GPDashboardViewMode.calendar
           : GPDashboardViewMode.list;
-      
+
       // Update stream if switching to calendar
       if (_viewMode == GPDashboardViewMode.calendar && _selectedDay != null) {
         _appointmentsStream = repository.fetchAppointmentsForDay(_selectedDay!);
@@ -58,12 +58,19 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
             onPressed: () => Navigator.pushNamed(context, '/chat_list'),
           ),
           IconButton(
-            icon: Icon(_viewMode == GPDashboardViewMode.list ? Icons.calendar_month : Icons.list),
+            icon: Icon(
+              _viewMode == GPDashboardViewMode.list
+                  ? Icons.calendar_month
+                  : Icons.list,
+            ),
             onPressed: _onViewToggle,
-            tooltip: 'Switch to ${_viewMode == GPDashboardViewMode.list ? "Calendar" : "List"} View',
+            tooltip:
+                'Switch to ${_viewMode == GPDashboardViewMode.list ? "Calendar" : "List"} View',
           ),
         ],
-        bottom: _viewMode == GPDashboardViewMode.list ? _buildListFilters() : null,
+        bottom: _viewMode == GPDashboardViewMode.list
+            ? _buildListFilters()
+            : null,
       ),
       body: Column(
         children: [
@@ -82,8 +89,11 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                 var appointments = snapshot.data ?? [];
 
                 // Secondary Filtering for Search and Status (if in list mode)
-                if (_viewMode == GPDashboardViewMode.list && _filterStatus != 'all') {
-                  appointments = appointments.where((a) => a.status == _filterStatus).toList();
+                if (_viewMode == GPDashboardViewMode.list &&
+                    _filterStatus != 'all') {
+                  appointments = appointments
+                      .where((a) => a.status == _filterStatus)
+                      .toList();
                 }
 
                 return Column(
@@ -95,7 +105,9 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                           ? const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(20.0),
-                                child: Text('No appointments found for this selection.'),
+                                child: Text(
+                                  'No appointments found for this selection.',
+                                ),
                               ),
                             )
                           : _buildAppointmentList(appointments),
@@ -112,8 +124,14 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
 
   Widget _buildStatsBanner(List<Appointment> all) {
     final today = DateTime.now();
-    final todayCount = all.where((a) =>
-      a.time.year == today.year && a.time.month == today.month && a.time.day == today.day).length;
+    final todayCount = all
+        .where(
+          (a) =>
+              a.time.year == today.year &&
+              a.time.month == today.month &&
+              a.time.day == today.day,
+        )
+        .length;
     final pending = all.where((a) => a.status == 'pending').length;
     final completed = all.where((a) => a.status == 'completed').length;
 
@@ -135,7 +153,11 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
           _buildStatDivider(),
           _buildStat('Pending', pending.toString(), Icons.pending_actions),
           _buildStatDivider(),
-          _buildStat('Completed', completed.toString(), Icons.check_circle_outline),
+          _buildStat(
+            'Completed',
+            completed.toString(),
+            Icons.check_circle_outline,
+          ),
         ],
       ),
     );
@@ -147,8 +169,18 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
       children: [
         Icon(icon, color: Colors.white70, size: 20),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
+        ),
       ],
     );
   }
@@ -183,30 +215,39 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
-              children: ['all', 'pending', 'confirmed', 'completed', 'declined'].map((status) {
-                final isSelected = _filterStatus == status;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: FilterChip(
-                    label: Text(
-                      status[0].toUpperCase() + status.substring(1),
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              children: ['all', 'pending', 'confirmed', 'completed', 'declined']
+                  .map((status) {
+                    final isSelected = _filterStatus == status;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: FilterChip(
+                        label: Text(
+                          status[0].toUpperCase() + status.substring(1),
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        selected: isSelected,
+                        onSelected: (val) =>
+                            setState(() => _filterStatus = status),
+                        selectedColor: const Color(0xFF004D40),
+                        checkmarkColor: Colors.white,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(
+                            color: isSelected
+                                ? Colors.transparent
+                                : Colors.grey[300]!,
+                          ),
+                        ),
                       ),
-                    ),
-                    selected: isSelected,
-                    onSelected: (val) => setState(() => _filterStatus = status),
-                    selectedColor: const Color(0xFF004D40),
-                    checkmarkColor: Colors.white,
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey[300]!),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  })
+                  .toList(),
             ),
           ),
           const SizedBox(height: 8),
@@ -230,7 +271,9 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
           setState(() {
             _selectedDay = selectedDay;
             _focusedDay = focusedDay;
-            _appointmentsStream = repository.fetchAppointmentsForDay(selectedDay);
+            _appointmentsStream = repository.fetchAppointmentsForDay(
+              selectedDay,
+            );
           });
         },
         onFormatChanged: (format) {
@@ -239,14 +282,27 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
           }
         },
         calendarStyle: const CalendarStyle(
-          selectedDecoration: BoxDecoration(color: Color(0xFF00796B), shape: BoxShape.circle),
-          todayDecoration: BoxDecoration(color: Color(0xFF004D40), shape: BoxShape.circle),
-          markerDecoration: BoxDecoration(color: Color(0xFF004D40), shape: BoxShape.circle),
+          selectedDecoration: BoxDecoration(
+            color: Color(0xFF00796B),
+            shape: BoxShape.circle,
+          ),
+          todayDecoration: BoxDecoration(
+            color: Color(0xFF004D40),
+            shape: BoxShape.circle,
+          ),
+          markerDecoration: BoxDecoration(
+            color: Color(0xFF004D40),
+            shape: BoxShape.circle,
+          ),
         ),
         headerStyle: const HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,
-          titleTextStyle: TextStyle(color: Color(0xFF004D40), fontWeight: FontWeight.bold, fontSize: 18),
+          titleTextStyle: TextStyle(
+            color: Color(0xFF004D40),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
     );
@@ -255,7 +311,7 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
   Widget _buildAppointmentList(List<Appointment> appointments) {
     return ListView.separated(
       itemCount: appointments.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final appt = appointments[index];
         return FutureBuilder<Patient?>(
@@ -275,7 +331,10 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                 backgroundColor: Color(0xFF004D40),
                 child: Icon(Icons.person, color: Colors.white),
               ),
-              title: Text(patientName, style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(
+                patientName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -284,19 +343,48 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: _getStatusColor(appt.status),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(appt.status.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          appt.status.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       if (appt.status == 'pending') ...[
-                        _buildActionButton('Accept', () => repository.updateAppointmentStatus(appt.id, 'confirmed')),
-                        _buildActionButton('Decline', () => repository.updateAppointmentStatus(appt.id, 'declined'), isError: true),
+                        _buildActionButton(
+                          'Accept',
+                          () => repository.updateAppointmentStatus(
+                            appt.id,
+                            'confirmed',
+                          ),
+                        ),
+                        _buildActionButton(
+                          'Decline',
+                          () => repository.updateAppointmentStatus(
+                            appt.id,
+                            'declined',
+                          ),
+                          isError: true,
+                        ),
                       ] else if (appt.status == 'confirmed') ...[
-                        _buildActionButton('Mark Completed', () => repository.updateAppointmentStatus(appt.id, 'completed'), isSuccess: true),
+                        _buildActionButton(
+                          'Mark Completed',
+                          () => repository.updateAppointmentStatus(
+                            appt.id,
+                            'completed',
+                          ),
+                          isSuccess: true,
+                        ),
                       ],
                     ],
                   ),
@@ -308,7 +396,10 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => GPPatientSummaryScreen(patient: patient, appointmentId: appt.id),
+                      builder: (_) => GPPatientSummaryScreen(
+                        patient: patient,
+                        appointmentId: appt.id,
+                      ),
                     ),
                   );
                 }
@@ -320,24 +411,44 @@ class _GPDashboardScreenState extends State<GPDashboardScreen> {
     );
   }
 
-  Widget _buildActionButton(String label, VoidCallback onPressed, {bool isError = false, bool isSuccess = false}) {
+  Widget _buildActionButton(
+    String label,
+    VoidCallback onPressed, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
     Color color = Colors.blue;
     if (isError) color = Colors.redAccent;
     if (isSuccess) color = Colors.green;
     return TextButton(
-      onPressed: onPressed, 
-      style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(50, 30)),
-      child: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold))
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(50, 30),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'pending': return Colors.orange[100]!;
-      case 'confirmed': return Colors.green[100]!;
-      case 'completed': return Colors.blue[100]!;
-      case 'declined': return Colors.red[100]!;
-      default: return Colors.grey[200]!;
+      case 'pending':
+        return Colors.orange[100]!;
+      case 'confirmed':
+        return Colors.green[100]!;
+      case 'completed':
+        return Colors.blue[100]!;
+      case 'declined':
+        return Colors.red[100]!;
+      default:
+        return Colors.grey[200]!;
     }
   }
 }

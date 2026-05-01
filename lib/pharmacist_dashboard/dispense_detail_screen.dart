@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/prescription_model.dart';
 import '../psychiatrist_dashboard/repository.dart';
-import 'models.dart';
 
 class DispenseDetailScreen extends StatefulWidget {
   final Prescription prescription;
@@ -19,31 +18,50 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
     setState(() => _isProcessing = true);
 
     // 1. Update Prescription Status
-    final success = await repository.updatePrescriptionStatus(widget.prescription.id, 'dispensed');
+    final success = await repository.updatePrescriptionStatus(
+      widget.prescription.id,
+      'dispensed',
+    );
 
     if (success) {
       // 2. Try to update inventory if medication matches
       // This is a simple name-based match for the demo
       final inventory = await repository.fetchInventory().first;
-      final med = inventory.where((m) => 
-        widget.prescription.medication.toLowerCase().contains(m.name.toLowerCase()) ||
-        m.name.toLowerCase().contains(widget.prescription.medication.toLowerCase())
-      ).firstOrNull;
+      final med = inventory
+          .where(
+            (m) =>
+                widget.prescription.medication.toLowerCase().contains(
+                  m.name.toLowerCase(),
+                ) ||
+                m.name.toLowerCase().contains(
+                  widget.prescription.medication.toLowerCase(),
+                ),
+          )
+          .firstOrNull;
 
       if (med != null && med.stock > 0) {
-        await repository.updateInventoryStock(med.id, med.stock - 1); // Simple decrement
+        await repository.updateInventoryStock(
+          med.id,
+          med.stock - 1,
+        ); // Simple decrement
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Medication dispensed successfully'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Medication dispensed successfully'),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context);
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to dispense medication'), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text('Failed to dispense medication'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -77,11 +95,20 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF003366),
                   minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: _isProcessing
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('DISPENSE MEDICATION', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    : const Text(
+                        'DISPENSE MEDICATION',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               )
             else
               Container(
@@ -97,7 +124,13 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
                   children: [
                     const Icon(Icons.check_circle, color: Colors.green),
                     const SizedBox(width: 8),
-                    const Text('MEDICATION ALREADY DISPENSED', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'MEDICATION ALREADY DISPENSED',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -121,8 +154,17 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(p.patientName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                Text('ID: ${p.patientId}', style: TextStyle(color: Colors.grey[700])),
+                Text(
+                  p.patientName,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'ID: ${p.patientId}',
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
               ],
             ),
           ],
@@ -135,13 +177,20 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Prescription Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Prescription Details',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const Divider(),
         _buildInfoRow(Icons.medication, 'Medication', p.medication),
         _buildInfoRow(Icons.scale, 'Dosage', p.dosage),
         _buildInfoRow(Icons.info_outline, 'Instructions', p.instructions),
         _buildInfoRow(Icons.person_pin, 'Prescribed By', p.doctorName),
-        _buildInfoRow(Icons.calendar_today, 'Date', '${p.date.toLocal()}'.split(' ')[0]),
+        _buildInfoRow(
+          Icons.calendar_today,
+          'Date',
+          '${p.date.toLocal()}'.split(' ')[0],
+        ),
       ],
     );
   }
@@ -158,8 +207,17 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Text(
+                  label,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
@@ -173,15 +231,22 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Dispensing'),
-        content: Text('Are you sure you want to mark ${widget.prescription.medication} as dispensed for ${widget.prescription.patientName}?'),
+        content: Text(
+          'Are you sure you want to mark ${widget.prescription.medication} as dispensed for ${widget.prescription.patientName}?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _dispenseMedication();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF003366)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF003366),
+            ),
             child: const Text('Confirm', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -189,6 +254,7 @@ class _DispenseDetailScreenState extends State<DispenseDetailScreen> {
     );
   }
 }
+
 extension on List {
-  get firstOrNull => isNotEmpty ? first : null;
+  dynamic get firstOrNull => isNotEmpty ? first : null;
 }
