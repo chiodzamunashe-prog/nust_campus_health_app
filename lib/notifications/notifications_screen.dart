@@ -21,6 +21,97 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   late Stream<List<notif.Notification>> _notificationsStream;
   late Stream<List<notif.Reminder>> _remindersStream;
 
+  List<notif.Notification> get _sampleNotifications => [
+    notif.Notification(
+      id: 'sample-1',
+      userId: _currentUserId,
+      title: 'Lab results ready',
+      message:
+          'Your blood panel is ready for review. Tap to view the details and next steps.',
+      type: notif.NotificationType.result,
+      createdAt: DateTime.now().subtract(const Duration(minutes: 20)),
+    ),
+    notif.Notification(
+      id: 'sample-2',
+      userId: _currentUserId,
+      title: 'New appointment confirmed',
+      message:
+          'Your dermatologist appointment is confirmed for tomorrow at 10:30 AM.',
+      type: notif.NotificationType.appointment,
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+    ),
+    notif.Notification(
+      id: 'sample-3',
+      userId: _currentUserId,
+      title: 'Hydration reminder',
+      message: 'Drink a glass of water to keep your daily hydration on track.',
+      type: notif.NotificationType.reminder,
+      createdAt: DateTime.now().subtract(const Duration(hours: 5)),
+    ),
+    notif.Notification(
+      id: 'sample-4',
+      userId: _currentUserId,
+      title: 'Campus clinic update',
+      message:
+          'The campus clinic will be open until 8 PM today for evening checkups.',
+      type: notif.NotificationType.announcement,
+      createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
+    ),
+    notif.Notification(
+      id: 'sample-5',
+      userId: _currentUserId,
+      title: 'Prescription ready',
+      message:
+          'Your prescribed medication is available for pickup at the pharmacy.',
+      type: notif.NotificationType.result,
+      createdAt: DateTime.now().subtract(const Duration(days: 2)),
+    ),
+  ];
+
+  List<notif.Reminder> get _sampleReminders => [
+    notif.Reminder(
+      id: 'reminder-1',
+      userId: _currentUserId,
+      title: 'Daily vitamins',
+      description: 'Take your daily vitamins to support immune health.',
+      scheduledTime: DateTime.now().add(const Duration(hours: 1)),
+      frequency: notif.ReminderFrequency.daily,
+      isActive: true,
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
+    ),
+    notif.Reminder(
+      id: 'reminder-2',
+      userId: _currentUserId,
+      title: 'Physio exercises',
+      description: 'Complete your knee recovery exercises for 20 minutes.',
+      scheduledTime: DateTime.now().add(const Duration(hours: 4)),
+      frequency: notif.ReminderFrequency.daily,
+      isActive: true,
+      createdAt: DateTime.now().subtract(const Duration(days: 2)),
+    ),
+    notif.Reminder(
+      id: 'reminder-3',
+      userId: _currentUserId,
+      title: 'Medication review',
+      description: 'Review your medications before your next consultation.',
+      scheduledTime: DateTime.now().add(const Duration(days: 1, hours: 9)),
+      frequency: notif.ReminderFrequency.before_appointment,
+      isActive: true,
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
+    ),
+    notif.Reminder(
+      id: 'reminder-4',
+      userId: _currentUserId,
+      title: 'Annual checkup prep',
+      description:
+          'Gather your health history and symptoms before the checkup.',
+      scheduledTime: DateTime.now().add(const Duration(days: 2, hours: 2)),
+      frequency: notif.ReminderFrequency.weekly,
+      isActive: false,
+      createdAt: DateTime.now().subtract(const Duration(days: 4)),
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -45,14 +136,31 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final userId = AuthService.instance.currentUserId;
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F9FF),
       appBar: AppBar(
         title: const Text('Notifications & Reminders'),
         elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black87,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF3366FF), Color(0xFF00C6FF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
+          indicator: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            color: Colors.white.withOpacity(0.25),
+          ),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
           tabs: const [
             Tab(text: 'Notifications'),
             Tab(text: 'Reminders'),
@@ -61,146 +169,197 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [_buildNotificationsTab(userId), _buildRemindersTab(userId)],
+        children: [_buildNotificationsTab(), _buildRemindersTab()],
       ),
     );
   }
 
-  Widget _buildNotificationsTab(String userId) {
+  Widget _buildNotificationsTab() {
     return StreamBuilder<List<notif.Notification>>(
       stream: _notificationsStream,
       builder: (context, snapshot) {
+        final hasData = snapshot.hasData && snapshot.data!.isNotEmpty;
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.notifications_off_outlined,
-                  size: 64,
-                  color: Colors.grey.shade300,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No notifications yet',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'You\'re all caught up!',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          );
+        final notifications = hasData ? snapshot.data! : _sampleNotifications;
+        final unreadCount = notifications.where((n) => !n.isRead).length;
+
+        if (hasData) {
+          _notificationService.updateBadgeCount(unreadCount);
         }
 
-        final notifications = snapshot.data!;
-        final unreadCount = notifications.where((n) => !n.isRead).length;
-        _notificationService.updateBadgeCount(unreadCount);
-
-        return ListView.builder(
-          itemCount: notifications.length,
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+          itemCount: notifications.length + 1,
+          separatorBuilder: (_, __) => const SizedBox(height: 14),
           itemBuilder: (context, index) {
-            final notification = notifications[index];
-            return _buildNotificationTile(context, notification);
+            if (index == 0) {
+              return _buildNotificationsHeader(
+                context,
+                notifications.length,
+                hasData,
+              );
+            }
+            final notification = notifications[index - 1];
+            return _buildNotificationTile(
+              context,
+              notification,
+              isSample: !hasData,
+            );
           },
         );
       },
     );
   }
 
+  Widget _buildNotificationsHeader(
+    BuildContext context,
+    int count,
+    bool hasRealData,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          hasRealData ? 'Latest updates' : 'Sample notifications',
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          hasRealData
+              ? 'Stay informed about your health schedule and results.'
+              : 'These preview cards show how notifications will look when your app is active.',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
+        ),
+        const SizedBox(height: 18),
+      ],
+    );
+  }
+
   Widget _buildNotificationTile(
     BuildContext context,
-    notif.Notification notification,
-  ) {
+    notif.Notification notification, {
+    bool isSample = false,
+  }) {
     final backgroundColor = notification.isRead
-        ? Colors.grey.shade50
-        : Colors.blue.shade50;
+        ? Colors.white
+        : Colors.blue.shade50.withOpacity(0.9);
     final iconColor = _getNotificationIconColor(notification.type);
 
-    return GestureDetector(
-      onTap: () {
-        if (!notification.isRead) {
-          _repository.markAsRead(notification.id).then((_) {
-            _refreshBadge();
-          });
-        }
-        _showNotificationDetail(context, notification);
-      },
-      child: Container(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
         color: backgroundColor,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Icon(
-                  _getNotificationIcon(notification.type),
-                  color: iconColor,
-                  size: 24,
-                ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Icon(
+                _getNotificationIcon(notification.type),
+                color: iconColor,
+                size: 26,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          notification.title,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                fontWeight: notification.isRead
-                                    ? FontWeight.normal
-                                    : FontWeight.bold,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        notification.title,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: notification.isRead
+                                  ? FontWeight.w600
+                                  : FontWeight.w700,
+                            ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (!notification.isRead && !isSample)
+                      Container(
+                        margin: const EdgeInsets.only(left: 8, top: 2),
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.blueAccent,
+                          shape: BoxShape.circle,
                         ),
                       ),
-                      if (!notification.isRead)
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.blue,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  notification.message,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey.shade700,
+                    height: 1.4,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    notification.message,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _formatTime(notification.createdAt),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.grey.shade500,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatTime(notification.createdAt),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        notification.type.name.toUpperCase(),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: iconColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
+          ),
+          if (!isSample)
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'delete') {
@@ -222,205 +381,264 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 ),
               ],
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildRemindersTab(String userId) {
+  Widget _buildRemindersTab() {
     return StreamBuilder<List<notif.Reminder>>(
       stream: _remindersStream,
       builder: (context, snapshot) {
+        final hasData = snapshot.hasData && snapshot.data!.isNotEmpty;
+        final reminders = hasData ? snapshot.data! : _sampleReminders;
+        final activeReminders = reminders.where((r) => r.isActive).toList();
+        final inactiveReminders = reminders.where((r) => !r.isActive).toList();
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.schedule_outlined,
-                  size: 64,
-                  color: Colors.grey.shade300,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No reminders set',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Create reminders to stay on top of your health',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () => _showCreateReminderDialog(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Create Reminder'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        final reminders = snapshot.data!;
-        final activeReminders = reminders.where((r) => r.isActive).toList();
-        final inactiveReminders = reminders.where((r) => !r.isActive).toList();
-
         return ListView(
+          padding: const EdgeInsets.symmetric(vertical: 16),
           children: [
-            if (activeReminders.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildRemindersHeader(context, hasData),
+            ),
+            const SizedBox(height: 12),
+            ...activeReminders.map(
+              (reminder) => _buildReminderTile(
+                context,
+                reminder,
+                _repository,
+                isSample: !hasData,
+              ),
+            ),
+            if (activeReminders.isEmpty) ...[
+              const SizedBox(height: 20),
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Text(
-                      'Active Reminders',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Spacer(),
-                    ElevatedButton.icon(
-                      onPressed: () => _showCreateReminderDialog(context),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Add'),
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'No active reminders yet. Add one to stay on top of your wellness routine.',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
                 ),
               ),
-            ...activeReminders.map(
-              (reminder) => _buildReminderTile(context, reminder, _repository),
-            ),
+            ],
             if (inactiveReminders.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 24, 16, 16),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Inactive Reminders',
-                  style: TextStyle(
-                    fontSize: 16,
+                  hasData ? 'Inactive Reminders' : 'Preview reminders',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
               ...inactiveReminders.map(
-                (reminder) =>
-                    _buildReminderTile(context, reminder, _repository),
+                (reminder) => _buildReminderTile(
+                  context,
+                  reminder,
+                  _repository,
+                  isSample: !hasData,
+                ),
               ),
             ],
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton.icon(
+                onPressed: () => _showCreateReminderDialog(context),
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Create new reminder'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         );
       },
     );
   }
 
+  Widget _buildRemindersHeader(BuildContext context, bool hasData) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          hasData ? 'Your wellness schedule' : 'Reminder preview',
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          hasData
+              ? 'Manage medication, appointments, and health goals in one place.'
+              : 'These cards demonstrate how reminders look in your dashboard.',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
+        ),
+      ],
+    );
+  }
+
   Widget _buildReminderTile(
     BuildContext context,
     notif.Reminder reminder,
-    NotificationsRepository repository,
-  ) {
+    NotificationsRepository repository, {
+    bool isSample = false,
+  }) {
     final frequencyLabel = _getFrequencyLabel(reminder.frequency);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: reminder.isActive ? Colors.white : Colors.grey.shade50,
-        border: Border.all(
-          color: reminder.isActive
-              ? const Color(0xFF003366).withOpacity(0.2)
-              : Colors.grey.shade200,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: Checkbox(
-          value: reminder.isActive,
-          onChanged: (value) {
-            repository.toggleReminder(reminder.id, value ?? true);
-          },
-        ),
-        title: Text(
-          reminder.title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: reminder.isActive ? Colors.black : Colors.grey,
+        color: reminder.isActive ? Colors.white : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
-        ),
-        subtitle: Column(
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 4),
-            Text(reminder.description),
-            const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.schedule, size: 14, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: reminder.isActive
+                        ? const Color(0xFF3366FF).withOpacity(0.12)
+                        : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    Icons.notifications_active,
+                    color: reminder.isActive
+                        ? const Color(0xFF3366FF)
+                        : Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    reminder.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: reminder.isActive
+                          ? Colors.black87
+                          : Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+                if (!isSample)
+                  Switch(
+                    value: reminder.isActive,
+                    onChanged: (value) {
+                      repository.toggleReminder(reminder.id, value);
+                    },
+                    activeColor: const Color(0xFF3366FF),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              reminder.description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey.shade700,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Icon(Icons.schedule, size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 6),
                 Text(
                   _formatTime(reminder.scheduledTime),
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
                 ),
                 const SizedBox(width: 16),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
+                    horizontal: 10,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                    borderRadius: BorderRadius.circular(4),
+                    color: reminder.isActive
+                        ? const Color(0xFF00C6FF).withOpacity(0.16)
+                        : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     frequencyLabel,
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: reminder.isActive
+                          ? const Color(0xFF0091EA)
+                          : Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
             ),
+            if (!isSample)
+              Align(
+                alignment: Alignment.centerRight,
+                child: PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'delete') {
+                      repository.deleteReminder(reminder.id);
+                    } else if (value == 'edit') {
+                      _showEditReminderDialog(context, reminder);
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    const PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 18),
+                          SizedBox(width: 8),
+                          Text('Edit'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, size: 18),
+                          SizedBox(width: 8),
+                          Text('Delete'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'delete') {
-              repository.deleteReminder(reminder.id);
-            } else if (value == 'edit') {
-              _showEditReminderDialog(context, reminder);
-            }
-          },
-          itemBuilder: (BuildContext context) => [
-            const PopupMenuItem<String>(
-              value: 'edit',
-              child: Row(
-                children: [
-                  Icon(Icons.edit_outlined, size: 18),
-                  SizedBox(width: 8),
-                  Text('Edit'),
-                ],
-              ),
-            ),
-            const PopupMenuItem<String>(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete_outline, size: 18),
-                  SizedBox(width: 8),
-                  Text('Delete'),
-                ],
-              ),
-            ),
-          ],
-        ),
-        isThreeLine: true,
       ),
     );
   }
@@ -431,6 +649,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   ) {
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -439,25 +660,36 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           children: [
             Row(
               children: [
-                Icon(
-                  _getNotificationIcon(notification.type),
-                  color: _getNotificationIconColor(notification.type),
-                  size: 32,
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: _getNotificationIconColor(
+                      notification.type,
+                    ).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    _getNotificationIcon(notification.type),
+                    color: _getNotificationIconColor(notification.type),
+                    size: 28,
+                  ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 18),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         notification.title,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
+                      const SizedBox(height: 6),
                       Text(
                         _formatTime(notification.createdAt),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.labelSmall?.copyWith(color: Colors.grey),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                   ),
@@ -467,14 +699,21 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             const SizedBox(height: 24),
             Text(
               notification.message,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
             Row(
               children: [
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 TextButton(
@@ -503,6 +742,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Create Reminder'),
         content: SingleChildScrollView(
           child: Column(
@@ -526,7 +766,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<notif.ReminderFrequency>(
-                value: selectedFrequency,
+                initialValue: selectedFrequency,
                 decoration: const InputDecoration(
                   labelText: 'Frequency',
                   border: OutlineInputBorder(),
@@ -586,6 +826,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Edit Reminder'),
         content: SingleChildScrollView(
           child: Column(
@@ -650,12 +891,15 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     final yesterday = today.subtract(const Duration(days: 1));
     final date = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+
     if (date == today) {
-      return 'Today ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+      return 'Today $hour:$minute';
     } else if (date == yesterday) {
-      return 'Yesterday ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+      return 'Yesterday $hour:$minute';
     } else {
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year} $hour:$minute';
     }
   }
 
@@ -675,13 +919,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   Color _getNotificationIconColor(notif.NotificationType type) {
     switch (type) {
       case notif.NotificationType.appointment:
-        return Colors.blue;
+        return const Color(0xFF3366FF);
       case notif.NotificationType.reminder:
-        return Colors.orange;
+        return const Color(0xFFFFA726);
       case notif.NotificationType.result:
-        return Colors.green;
+        return const Color(0xFF43A047);
       case notif.NotificationType.announcement:
-        return Colors.purple;
+        return const Color(0xFF7E57C2);
     }
   }
 
