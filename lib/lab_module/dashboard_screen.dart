@@ -1,3 +1,57 @@
+import 'package:flutter/material.dart';
+import '../psychiatrist_dashboard/repository.dart';
+import 'models.dart';
+import 'result_entry_screen.dart';
+
+class LabDashboardScreen extends StatefulWidget {
+  const LabDashboardScreen({super.key});
+
+  @override
+  State<LabDashboardScreen> createState() => _LabDashboardScreenState();
+}
+
+class _LabDashboardScreenState extends State<LabDashboardScreen> {
+  String _searchQuery = '';
+  String _statusFilter = 'all'; // 'all', 'pending', 'completed'
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: AppBar(
+          title: const Text(
+            'Lab Technician Dashboard',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: const Color(0xFF1565C0), // Blue primary
+          foregroundColor: Colors.white,
+          elevation: 0,
+          bottom: const TabBar(
+            indicatorColor: Color(0xFFFFC107), // Yellow
+            indicatorWeight: 3,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            tabs: [
+              Tab(text: 'Pending Requests', icon: Icon(Icons.pending_actions)),
+              Tab(text: 'Completed Tests', icon: Icon(Icons.check_circle)),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildRequestList(isPending: true),
+            _buildRequestList(isPending: false),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildRequestList({required bool isPending}) {
     return Column(
