@@ -122,9 +122,9 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Zamazane Chiodza', // Placeholder name
-            style: TextStyle(
+          Text(
+            AuthService.instance.currentUserDisplayName,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.bold,

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_service.dart';
 
-class LoginScreen extends StatefulWidget {
-  final String? redirectTo;
-  const LoginScreen({super.key, this.redirectTo});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _identifierCtrl = TextEditingController(); // Email or Student ID
-  final _passCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _identifierCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
   bool _loading = false;
-  bool _obscurePassword = true;
   String? _error;
 
   @override
@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF003366), Color(0xFF002244)], // Deep NUST Blue
+            colors: [Color(0xFF003366), Color(0xFF004D99)],
           ),
         ),
         child: Center(
@@ -35,13 +35,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo & Header
-                _buildHeader(),
-                const SizedBox(height: 40),
-                // Login Card
-                _buildLoginCard(),
                 const SizedBox(height: 24),
-                // Footer Links
+                _buildHeader(),
+                const SizedBox(height: 32),
+                _buildRegisterCard(),
+                const SizedBox(height: 24),
                 _buildFooter(),
               ],
             ),
@@ -68,26 +66,28 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
           child: const Icon(
-            Icons.local_hospital,
-            size: 80,
+            Icons.health_and_safety,
+            size: 60,
             color: Color(0xFF003366),
           ),
         ),
         const SizedBox(height: 24),
         const Text(
-          'NUST Campus Health',
+          'Create Your Account',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
+            letterSpacing: 1.1,
           ),
         ),
+        const SizedBox(height: 8),
         const Text(
-          'University Healthcare Portal',
+          'Register with NUST Campus Health',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            color: Color(0xFFFFB81C), // NUST Gold
+            color: Color(0xFFFFB81C),
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginCard() {
+  Widget _buildRegisterCard() {
     return Card(
       elevation: 8,
       shadowColor: Colors.black45,
@@ -108,42 +108,40 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Welcome Back',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+              _buildTextField(
+                controller: _nameCtrl,
+                label: 'Full Name',
+                icon: Icons.person,
+                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Please sign in to continue',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              // Identifier Field
+              const SizedBox(height: 16),
               _buildTextField(
                 controller: _identifierCtrl,
                 label: 'Email or Student ID',
-                icon: Icons.person_outline,
+                icon: Icons.email_outlined,
                 validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 20),
-              // Password Field
+              const SizedBox(height: 16),
               _buildTextField(
-                controller: _passCtrl,
+                controller: _passwordCtrl,
                 label: 'Password',
                 icon: Icons.lock_outline,
-                obscureText: _obscurePassword,
-                suffix: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
-                ),
+                obscureText: true,
                 validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _confirmCtrl,
+                label: 'Confirm Password',
+                icon: Icons.lock_outline,
+                obscureText: true,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Required';
+                  if (v != _passwordCtrl.text) return 'Passwords do not match';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
@@ -153,8 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-              const SizedBox(height: 12),
-              // Submit Button
               _loading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
@@ -169,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         elevation: 4,
                       ),
                       child: const Text(
-                        'Login',
+                        'Register',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -188,7 +184,6 @@ class _LoginScreenState extends State<LoginScreen> {
     required String label,
     required IconData icon,
     bool obscureText = false,
-    Widget? suffix,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -198,7 +193,6 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
-        suffixIcon: suffix,
         filled: true,
         fillColor: Colors.grey[100],
         border: OutlineInputBorder(
@@ -221,33 +215,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/login');
+          },
           child: const Text(
-            'Forgot Password?',
+            'Already have an account? Login',
             style: TextStyle(
               color: Colors.white70,
               fontWeight: FontWeight.w500,
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("New here? ", style: TextStyle(color: Colors.white60)),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              child: const Text(
-                'Register now',
-                style: TextStyle(
-                  color: Color(0xFFFFB81C),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -259,30 +236,29 @@ class _LoginScreenState extends State<LoginScreen> {
       _loading = true;
       _error = null;
     });
-    final ok = await AuthService.instance.login(
+    final ok = await AuthService.instance.register(
       _identifierCtrl.text.trim(),
-      _passCtrl.text.trim(),
+      _passwordCtrl.text.trim(),
+      _nameCtrl.text.trim(),
     );
     if (!mounted) return;
     setState(() => _loading = false);
     if (ok) {
-      if (widget.redirectTo != null) {
-        Navigator.pushReplacementNamed(context, widget.redirectTo!);
-      } else {
-        Navigator.pushReplacementNamed(context, '/');
-      }
+      Navigator.pushReplacementNamed(context, '/');
     } else {
       setState(() {
         _error =
-            'No account found. Please register to continue with NUST Campus Health.';
+            'Unable to complete registration. That email/ID may already be registered.';
       });
     }
   }
 
   @override
   void dispose() {
+    _nameCtrl.dispose();
     _identifierCtrl.dispose();
-    _passCtrl.dispose();
+    _passwordCtrl.dispose();
+    _confirmCtrl.dispose();
     super.dispose();
   }
 }
