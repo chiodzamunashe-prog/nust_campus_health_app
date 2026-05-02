@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'
 import '../psychiatrist_dashboard/repository.dart';
 import 'models.dart';
 import 'result_entry_screen.dart';
