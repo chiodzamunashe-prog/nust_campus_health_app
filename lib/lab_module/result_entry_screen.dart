@@ -1,25 +1,3 @@
-import 'package:flutter/material.dart';
-import '../psychiatrist_dashboard/repository.dart';
-import 'models.dart';
-
-class LabResultEntryScreen extends StatefulWidget {
-  final LabRequest request;
-
-  const LabResultEntryScreen({super.key, required this.request});
-
-  @override
-  State<LabResultEntryScreen> createState() => _LabResultEntryScreenState();
-}
-
-class _LabResultEntryScreenState extends State<LabResultEntryScreen> {
-  final _resultController = TextEditingController();
-  bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _resultController.text = widget.request.result;
-  }
 
   void _saveResult() async {
     if (_resultController.text.trim().isEmpty) {
