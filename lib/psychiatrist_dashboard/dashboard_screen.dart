@@ -237,7 +237,8 @@ class _PsychiatristDashboardScreenState
   Widget _buildAppointmentList(List<Appointment> appointments) {
     return ListView.separated(
       itemCount: appointments.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       itemBuilder: (context, index) {
         final appt = appointments[index];
         return FutureBuilder<Patient?>(
@@ -252,79 +253,166 @@ class _PsychiatristDashboardScreenState
               return const SizedBox.shrink();
             }
 
-            return ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.person)),
-              title: Text(patientName),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${appt.time.toLocal()}'),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(appt.status),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          appt.status,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (appt.status == 'pending') ...[
-                        _buildActionButton(
-                          'Accept',
-                          () => repository.updateAppointmentStatus(
-                            appt.id,
-                            'confirmed',
-                          ),
-                        ),
-                        _buildActionButton(
-                          'Decline',
-                          () => repository.updateAppointmentStatus(
-                            appt.id,
-                            'declined',
-                          ),
-                          isError: true,
-                        ),
-                      ] else if (appt.status == 'confirmed') ...[
-                        _buildActionButton(
-                          'Mark Completed',
-                          () => repository.updateAppointmentStatus(
-                            appt.id,
-                            'completed',
-                          ),
-                          isSuccess: true,
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+            return Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                if (patient != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PatientSummaryScreen(
-                        patient: patient,
-                        appointmentId: appt.id,
-                      ),
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundColor: const Color(0xFF003366),
+                          child: Text(
+                            patientName.isNotEmpty
+                                ? patientName
+                                      .split(' ')
+                                      .map(
+                                        (part) =>
+                                            part.isNotEmpty ? part[0] : '',
+                                      )
+                                      .take(2)
+                                      .join()
+                                      .toUpperCase()
+                                : 'NA',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                patientName,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Student ID: ${patient?.studentId ?? 'N/A'} · Age: ${patient?.age ?? '—'}',
+                                style: const TextStyle(color: Colors.black87),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Appointment: ${_formatAppointmentTime(appt.time)}',
+                                style: TextStyle(color: Colors.grey[700]),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _buildStatusChip(appt.status),
+                      ],
                     ),
-                  );
-                }
-              },
+                    if (patient?.summary.isNotEmpty == true) ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        patient!.summary,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildActionButton('Summary', () {
+                          if (patient != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PatientSummaryScreen(
+                                  patient: patient,
+                                  appointmentId: appt.id,
+                                ),
+                              ),
+                            );
+                          }
+                        }),
+                        _buildActionButton('Prescription', () {
+                          if (patient != null) {
+                            Navigator.pushNamed(
+                              context,
+                              '/prescription_form',
+                              arguments: patient,
+                            );
+                          }
+                        }),
+                        if (appt.status == 'pending') ...[
+                          _buildActionButton(
+                            'Accept',
+                            () => repository.updateAppointmentStatus(
+                              appt.id,
+                              'confirmed',
+                            ),
+                          ),
+                          _buildActionButton(
+                            'Decline',
+                            () => repository.updateAppointmentStatus(
+                              appt.id,
+                              'declined',
+                            ),
+                            isError: true,
+                          ),
+                        ] else if (appt.status == 'confirmed') ...[
+                          _buildActionButton(
+                            'Mark Completed',
+                            () => repository.updateAppointmentStatus(
+                              appt.id,
+                              'completed',
+                            ),
+                            isSuccess: true,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         );
       },
+    );
+  }
+
+  String _formatAppointmentTime(DateTime time) {
+    final localTime = time.toLocal();
+    final hourString = localTime.hour == 0
+        ? '12'
+        : localTime.hour > 12
+        ? (localTime.hour - 12).toString()
+        : localTime.hour.toString();
+    final minuteString = localTime.minute.toString().padLeft(2, '0');
+    final period = localTime.hour >= 12 ? 'PM' : 'AM';
+    return '${localTime.day}/${localTime.month}/${localTime.year} $hourString:$minuteString $period';
+  }
+
+  Widget _buildStatusChip(String status) {
+    final color = _getStatusColor(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      ),
     );
   }
 
@@ -337,9 +425,23 @@ class _PsychiatristDashboardScreenState
     Color color = Colors.blue;
     if (isError) color = Colors.redAccent;
     if (isSuccess) color = Colors.green;
-    return TextButton(
+    return OutlinedButton.icon(
       onPressed: onPressed,
-      child: Text(label, style: TextStyle(color: color)),
+      icon: Icon(
+        isError
+            ? Icons.close
+            : isSuccess
+            ? Icons.check
+            : Icons.arrow_forward,
+        size: 18,
+        color: color,
+      ),
+      label: Text(label, style: TextStyle(color: color)),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: color),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
     );
   }
 
