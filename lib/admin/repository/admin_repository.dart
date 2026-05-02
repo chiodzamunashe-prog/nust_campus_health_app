@@ -19,7 +19,7 @@ class MockAdminRepository implements AdminRepository {
     ),
     Staff(
       id: '2',
-      name: 'Dr. John Doe',
+      name: 'Dr. Zamazane Chiodza',
       role: 'General Practitioner',
       email: 'john.doe@nust.ac.zw',
       phoneNumber: '+263772222222',

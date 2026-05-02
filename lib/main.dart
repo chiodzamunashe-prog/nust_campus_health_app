@@ -25,6 +25,8 @@ import 'firebase_options.dart';
 import 'notifications/notification_service.dart';
 import 'psychiatrist_dashboard/models.dart';
 import 'notifications/notifications_screen.dart';
+import 'records/repository.dart';
+import 'records/record.dart';
 
 void main() {
   runApp(const MyApp());
@@ -63,15 +65,18 @@ class _MyAppState extends State<MyApp> {
       try {
         repository = FirestoreRepository();
         chatRepository = FirestoreChatRepository();
+        recordsRepository = FirestoreRecordsRepository();
       } catch (_) {
         initMockRepository();
         initMockChatRepository();
+        initMockRecordsRepository();
       }
       initAdminMockRepository();
     } else {
       initMockRepository();
       initMockChatRepository();
       initAdminMockRepository();
+      initMockRecordsRepository();
     }
 
     await AppNotificationService.instance.initialize(
@@ -104,6 +109,13 @@ class _MyAppState extends State<MyApp> {
             if (settings.name == '/my_appointments') {
               return MaterialPageRoute(
                 builder: (_) => const MyAppointmentsScreen(),
+                settings: settings,
+              );
+            }
+
+            if (settings.name == '/medical_records') {
+              return MaterialPageRoute(
+                builder: (_) => const MedicalRecordsScreen(),
                 settings: settings,
               );
             }

@@ -23,7 +23,7 @@ class MockChatRepository implements ChatRepository {
       lastMessage: 'Hello Doctor, I have a question about my prescription.',
       updatedAt: DateTime.now().subtract(const Duration(minutes: 5)),
       participantNames: {
-        'student1@nust.ac.zw': 'John Doe',
+        'student1@nust.ac.zw': 'Zamazane Chiodza',
         'gp': 'Dr. Smith (GP)'
       },
     ));
@@ -45,7 +45,7 @@ class MockChatRepository implements ChatRepository {
       lastMessage: 'Your appointment is confirmed for tomorrow.',
       updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
       participantNames: {
-        'student1@nust.ac.zw': 'John Doe',
+        'student1@nust.ac.zw': 'Zamazane Chiodza',
         'psy': 'Dr. Moyo (Psychiatrist)'
       },
     ));

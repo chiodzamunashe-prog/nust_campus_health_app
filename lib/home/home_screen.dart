@@ -123,7 +123,7 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Zamazane Chiodza', // Placeholder name
+            'Zamazane Chiodza', 
             style: TextStyle(
               color: Colors.white,
               fontSize: 28,
@@ -272,6 +272,7 @@ class HomeScreen extends StatelessWidget {
                 'Records',
                 Icons.folder_shared,
                 Colors.orange.shade600,
+                onTap: () => Navigator.pushNamed(context, '/medical_records'),
               ),
               _buildActionCard(
                 context,
@@ -617,6 +618,19 @@ class HomeScreen extends StatelessWidget {
                       arguments: '/pharmacist_dashboard',
                     );
                   }
+                },
+              );
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: AuthService.instance.isLoggedIn,
+            builder: (context, loggedIn, _) {
+              return ListTile(
+                leading: const Icon(Icons.folder_shared),
+                title: const Text('Medical Records'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/medical_records');
                 },
               );
             },
