@@ -1,3 +1,8 @@
+import 'package:flutter/material.dart'
+import '../psychiatrist_dashboard/repository.dart';
+import 'models.dart';
+import 'result_entry_screen.dart';
+
 class LabDashboardScreen extends StatefulWidget {
   const LabDashboardScreen({super.key});
 
