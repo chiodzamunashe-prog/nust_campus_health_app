@@ -42,6 +42,7 @@ import 'notifications/firestore_repository.dart' as notif_firestore;
 import 'notifications/mock_repository.dart' as notif_mock;
 import 'models/prescription_model.dart';
 import 'firebase_options.dart';
+import 'counselling/counselling.dart';
 
 void main() {
   runApp(const MyApp());
@@ -216,23 +217,6 @@ class _MyAppState extends State<MyApp> {
                   );
                 }
 
-                if (settings.name == '/consultation_form') {
-                  final patientId = settings.arguments as String;
-                  return MaterialPageRoute(
-                    builder: (_) => GPConsultationForm(patientId: patientId),
-                    settings: settings,
-                  );
-                }
-
-                if (settings.name == '/medical_certificate') {
-                  final patientId = settings.arguments as String;
-                  return MaterialPageRoute(
-                    builder: (_) =>
-                        GPMedicalCertificateForm(patientId: patientId),
-                    settings: settings,
-                  );
-                }
-
                 if (settings.name == '/lab_dashboard') {
                   return MaterialPageRoute(
                     builder: (_) => const LabDashboardScreen(),
@@ -285,6 +269,13 @@ class _MyAppState extends State<MyApp> {
                       patient: patient,
                       appointmentId: appointmentId,
                     ),
+                    settings: settings,
+                  );
+                }
+
+                if (settings.name == '/counselling') {
+                  return MaterialPageRoute(
+                    builder: (_) => const CounsellingScreen(),
                     settings: settings,
                   );
                 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_service.dart';
 import 'package:nust_campus_health_app/profile/profile_page.dart';
+import '../counselling/counselling.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -287,6 +288,10 @@ class HomeScreen extends StatelessWidget {
                 'Counseling',
                 Icons.psychology,
                 Colors.purple.shade600,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CounsellingScreen()),
+                ),
               ),
             ],
           ),
@@ -618,19 +623,6 @@ class HomeScreen extends StatelessWidget {
                       arguments: '/pharmacist_dashboard',
                     );
                   }
-                },
-              );
-            },
-          ),
-          ValueListenableBuilder<bool>(
-            valueListenable: AuthService.instance.isLoggedIn,
-            builder: (context, loggedIn, _) {
-              return ListTile(
-                leading: const Icon(Icons.folder_shared),
-                title: const Text('Medical Records'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/medical_records');
                 },
               );
             },
