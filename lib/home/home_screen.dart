@@ -44,6 +44,8 @@ class HomeScreen extends StatelessWidget {
             _buildNewsSection(context),
             const SizedBox(height: 32),
             _buildHealthTip(context),
+            const SizedBox(height: 32),
+            _buildHealthStats(context),
             const SizedBox(height: 40),
           ],
         ),
@@ -287,6 +289,34 @@ class HomeScreen extends StatelessWidget {
                 Icons.psychology,
                 Colors.purple.shade600,
               ),
+              _buildActionCard(
+                context,
+                'Lab Tests',
+                Icons.biotech,
+                Colors.teal.shade600,
+                onTap: () => Navigator.pushNamed(context, '/lab_module'),
+              ),
+              _buildActionCard(
+                context,
+                'Emergency',
+                Icons.emergency,
+                Colors.red.shade600,
+                onTap: () => Navigator.pushNamed(context, '/emergency_hub'),
+              ),
+              _buildActionCard(
+                context,
+                'Chat',
+                Icons.chat,
+                Colors.indigo.shade600,
+                onTap: () => Navigator.pushNamed(context, '/chat_list'),
+              ),
+              _buildActionCard(
+                context,
+                'Notifications',
+                Icons.notifications,
+                Colors.amber.shade600,
+                onTap: () => Navigator.pushNamed(context, '/notifications'),
+              ),
             ],
           ),
         ),
@@ -348,7 +378,7 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Campus News',
+                'Campus News & Updates',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -361,7 +391,7 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 210,
+          height: 150,
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -369,12 +399,32 @@ class HomeScreen extends StatelessWidget {
               _buildNewsCard(
                 'Free Flu Shots',
                 'Visit the clinic this Friday for your annual vaccination.',
-                'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400',
+                Icons.vaccines,
+                Colors.blue.shade600,
               ),
               _buildNewsCard(
                 'Mental Health Week',
                 'Join us for daily workshops in the student lounge.',
-                'https://images.unsplash.com/photo-1527137342181-19aab11a8ee1?auto=format&fit=crop&q=80&w=400',
+                Icons.psychology,
+                Colors.purple.shade600,
+              ),
+              _buildNewsCard(
+                'Nutrition Seminar',
+                'Learn about balanced diets for better academic performance.',
+                Icons.restaurant,
+                Colors.green.shade600,
+              ),
+              _buildNewsCard(
+                'Sports Injury Clinic',
+                'Free check-ups for athletes every Tuesday.',
+                Icons.sports_soccer,
+                Colors.orange.shade600,
+              ),
+              _buildNewsCard(
+                'Sleep Awareness',
+                'Tips for better sleep and stress management.',
+                Icons.nightlight_round,
+                Colors.indigo.shade600,
               ),
             ],
           ),
@@ -383,7 +433,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNewsCard(String title, String subtitle, String imageUrl) {
+  Widget _buildNewsCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       width: 280,
       margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -398,45 +453,147 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            child: Image.network(
-              imageUrl,
-              height: 100,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 100,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.image, color: Colors.grey),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  child: Icon(icon, color: color, size: 24),
                 ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.black54, fontSize: 13),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.black54, fontSize: 13),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHealthStats(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Your Health Stats',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Steps Today',
+                  '8,432',
+                  Icons.directions_walk,
+                  Colors.blue.shade600,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildStatCard(
+                  'Water Intake',
+                  '6/8 glasses',
+                  Icons.local_drink,
+                  Colors.cyan.shade600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Sleep Hours',
+                  '7.5 hrs',
+                  Icons.nightlight_round,
+                  Colors.indigo.shade600,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildStatCard(
+                  'Mood',
+                  'Good',
+                  Icons.sentiment_satisfied,
+                  Colors.green.shade600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
