@@ -124,6 +124,7 @@ These are foundational pieces that other modules can build on top of:
 | chiodzamunashe-prog | chiodzamunashe@gmail.com | Core app development, Psychiatrist Dashboard |
 | Blessings Mazenge | n02423594t@students.nust.ac.zw | Notifications & Reminders |
 | Adam Rufaro Dzitiro | dzitiroadam4@gmail.com | Profile & Privacy |
+| Ryan Musuka | musuka.ryan@gmail.com | Reports & Counselling |
 
 ---
 
