@@ -3,3 +3,6 @@ A Campus Health App for NUST students that connects them with healthcare profess
 
 ## 📖 Documentation
 - **[Project Scope & Status](docs/PROJECT_SCOPE.md)**: View the module breakdown, psychiatrist dashboard status, and team guide.
+
+## GitHub Repo
+(https://github.com/chiodzamunashe-prog/nust_campus_health_app)
