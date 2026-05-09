@@ -16,6 +16,7 @@ class AuthService {
   );
   String? currentUser;
   String? currentUserName;
+  String? lastErrorMessage;
   NotificationsRepository? _notificationsRepository;
 
   String get currentUserId => currentUser ?? 'guest';
@@ -78,6 +79,11 @@ class AuthService {
       return true;
     } catch (e) {
       debugPrint('Login error: $e');
+      if (e is FirebaseAuthException) {
+        lastErrorMessage = e.message;
+      } else {
+        lastErrorMessage = e.toString();
+      }
       return false;
     }
   }
@@ -121,6 +127,13 @@ class AuthService {
       return true;
     } catch (e) {
       debugPrint('Registration error: $e');
+      if (e is FirebaseAuthException) {
+        lastErrorMessage = e.message;
+      } else if (e is FirebaseException) {
+        lastErrorMessage = e.message;
+      } else {
+        lastErrorMessage = e.toString();
+      }
       return false;
     }
   }

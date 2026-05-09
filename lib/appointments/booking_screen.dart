@@ -90,86 +90,147 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = const Color(0xFF003366);
+    final accentColor = const Color(0xFFFFB81C);
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Book Appointment'),
+        title: const Text('Book Appointment', style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          TableCalendar(
-            firstDay: DateTime.now(),
-            lastDay: DateTime.now().add(const Duration(days: 30)),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-              _fetchSlots(selectedDay);
-            },
-            calendarStyle: const CalendarStyle(
-              selectedDecoration: BoxDecoration(color: Color(0xFF003366), shape: BoxShape.circle),
-              todayDecoration: BoxDecoration(color: Color(0xFFFFB81C), shape: BoxShape.circle),
-            ),
-          ),
-          const Divider(),
-          _buildPatientSelector(),
-          const Divider(),
-          _buildTypeSelector(),
-          const Divider(),
-          _buildReasonInput(),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('Available Slots', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          _isLoadingSlots
-              ? const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))
-              : _availableSlots.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Center(child: Text('No slots available for this day.')),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        childAspectRatio: 2.5,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      itemCount: _availableSlots.length,
-                      itemBuilder: (context, index) {
-                        final slot = _availableSlots[index];
-                        final isSelected = _selectedSlot == slot;
-                        return ChoiceChip(
-                          label: Text('${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}'),
-                          selected: isSelected,
-                          onSelected: (val) {
-                            setState(() => _selectedSlot = val ? slot : null);
-                          },
-                          selectedColor: const Color(0xFFFFB81C),
-                          labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
-                        );
-                      },
-                    ),
-          const SizedBox(height: 20),
-          if (_selectedSlot != null)
+            _buildHeader(primaryColor),
             Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: _handleBook,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                ),
-                child: const Text('Confirm Booking'),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('1. Select Date'),
+                  const SizedBox(height: 12),
+                  _buildCalendarCard(primaryColor, accentColor),
+                  const SizedBox(height: 24),
+                  _buildPatientSelector(),
+                  _buildSectionTitle('2. Select Service'),
+                  const SizedBox(height: 12),
+                  _buildTypeSelector(primaryColor, accentColor),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('3. Reason for Visit'),
+                  const SizedBox(height: 12),
+                  _buildReasonInput(),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('4. Available Slots'),
+                  const SizedBox(height: 12),
+                  _buildSlotsGrid(accentColor),
+                  const SizedBox(height: 32),
+                  if (_selectedSlot != null) _buildConfirmButton(primaryColor),
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(Color primaryColor) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+      decoration: BoxDecoration(
+        color: primaryColor,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Plan Your Visit',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 16,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Book a professional session with our healthcare specialists.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF333333),
+      ),
+    );
+  }
+
+  Widget _buildCalendarCard(Color primaryColor, Color accentColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: TableCalendar(
+        firstDay: DateTime.now(),
+        lastDay: DateTime.now().add(const Duration(days: 30)),
+        focusedDay: _focusedDay,
+        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+        onDaySelected: (selectedDay, focusedDay) {
+          setState(() {
+            _selectedDay = selectedDay;
+            _focusedDay = focusedDay;
+          });
+          _fetchSlots(selectedDay);
+        },
+        headerStyle: const HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        calendarStyle: CalendarStyle(
+          selectedDecoration: BoxDecoration(
+            color: primaryColor,
+            shape: BoxShape.circle,
+          ),
+          todayDecoration: BoxDecoration(
+            color: accentColor.withOpacity(0.3),
+            shape: BoxShape.circle,
+          ),
+          todayTextStyle: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          selectedTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          outsideDaysVisible: false,
         ),
       ),
     );
@@ -179,103 +240,180 @@ class _BookingScreenState extends State<BookingScreen> {
     final role = AuthService.instance.userRole.value;
     if (role == UserRole.student) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Select Patient', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          if (_isLoadingPatients)
-            const CircularProgressIndicator()
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedPatientId,
-                  hint: const Text('Choose a person...'),
-                  isExpanded: true,
-                  items: _patients.map((p) {
-                    return DropdownMenuItem<String>(
-                      value: p['id'],
-                      child: Text(p['name']!),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedPatientId = val;
-                      _selectedPatientName = _patients.firstWhere((p) => p['id'] == val)['name'];
-                    });
-                  },
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Staff Only: Select Patient'),
+        const SizedBox(height: 12),
+        if (_isLoadingPatients)
+          const Center(child: CircularProgressIndicator())
+        else
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedPatientId,
+                hint: const Text('Choose a person...'),
+                isExpanded: true,
+                items: _patients.map((p) {
+                  return DropdownMenuItem<String>(
+                    value: p['id'],
+                    child: Text(p['name']!),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedPatientId = val;
+                    _selectedPatientName = _patients.firstWhere((p) => p['id'] == val)['name'];
+                  });
+                },
               ),
             ),
-        ],
-      ),
+          ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 
-  Widget _buildTypeSelector() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Select Service', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ChoiceChip(
-                  label: const Text('Psychiatrist'),
-                  selected: _selectedType == 'psychiatrist',
-                  onSelected: (val) => setState(() => _selectedType = 'psychiatrist'),
-                  selectedColor: const Color(0xFF003366),
-                  labelStyle: TextStyle(color: _selectedType == 'psychiatrist' ? Colors.white : Colors.black),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ChoiceChip(
-                  label: const Text('General Practitioner'),
-                  selected: _selectedType == 'gp',
-                  onSelected: (val) => setState(() => _selectedType = 'gp'),
-                  selectedColor: const Color(0xFF003366),
-                  labelStyle: TextStyle(color: _selectedType == 'gp' ? Colors.white : Colors.black),
-                ),
-              ),
-            ],
+  Widget _buildTypeSelector(Color primaryColor, Color accentColor) {
+    return Row(
+      children: [
+        Expanded(
+          child: _ServiceCard(
+            title: 'Psychiatrist',
+            icon: Icons.psychology,
+            isSelected: _selectedType == 'psychiatrist',
+            onTap: () => setState(() => _selectedType = 'psychiatrist'),
+            primaryColor: primaryColor,
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _ServiceCard(
+            title: 'Gen. Practitioner',
+            icon: Icons.medical_services,
+            isSelected: _selectedType == 'gp',
+            onTap: () => setState(() => _selectedType = 'gp'),
+            primaryColor: primaryColor,
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildReasonInput() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Reason for Visit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _reasonCtrl,
-            decoration: InputDecoration(
-              hintText: 'Briefly describe why you are booking this appointment...',
-              filled: true,
-              fillColor: Colors.grey[100],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+    return TextField(
+      controller: _reasonCtrl,
+      maxLines: 3,
+      decoration: InputDecoration(
+        hintText: 'Briefly describe why you are booking this appointment...',
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        filled: true,
+        fillColor: Colors.grey[50],
+        contentPadding: const EdgeInsets.all(16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey[200]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey[200]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: const Color(0xFF003366).withOpacity(0.5), width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlotsGrid(Color accentColor) {
+    if (_isLoadingSlots) {
+      return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
+    }
+    if (_availableSlots.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.red[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Text(
+            'No slots available for this day. Please select another date.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 2.2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: _availableSlots.length,
+      itemBuilder: (context, index) {
+        final slot = _availableSlots[index];
+        final isSelected = _selectedSlot == slot;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedSlot = isSelected ? null : slot),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              color: isSelected ? accentColor : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? accentColor : Colors.grey[300]!,
+                width: 1.5,
+              ),
+              boxShadow: isSelected
+                  ? [BoxShadow(color: accentColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+                  : [],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}',
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
-            maxLines: 2,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildConfirmButton(Color primaryColor) {
+    return ElevatedButton(
+      onPressed: _handleBook,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        minimumSize: const Size.fromHeight(60),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle_outline),
+          SizedBox(width: 12),
+          Text(
+            'Confirm Appointment',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -286,5 +424,62 @@ class _BookingScreenState extends State<BookingScreen> {
   void dispose() {
     _reasonCtrl.dispose();
     super.dispose();
+  }
+}
+
+class _ServiceCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Color primaryColor;
+
+  const _ServiceCard({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+    required this.primaryColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: isSelected ? primaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? primaryColor : Colors.grey[200]!,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: primaryColor.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))]
+              : [],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected ? Colors.white : primaryColor,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

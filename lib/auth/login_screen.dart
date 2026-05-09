@@ -274,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       setState(() {
-        _error =
+        _error = AuthService.instance.lastErrorMessage ??
             'No account found. Please register to continue with NUST Campus Health.';
       });
     }

@@ -308,7 +308,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pushReplacementNamed(context, '/');
     } else {
       setState(() {
-        _error =
+        _error = AuthService.instance.lastErrorMessage ??
             'Unable to complete registration. That email/ID may already be registered.';
       });
     }
