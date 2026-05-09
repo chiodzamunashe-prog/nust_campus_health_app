@@ -309,6 +309,24 @@ class _PsychiatristDashboardScreenState
                                 'Appointment: ${_formatAppointmentTime(appt.time)}',
                                 style: TextStyle(color: Colors.grey[700]),
                               ),
+                              if (appt.reason.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[50],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'Reason: ${appt.reason}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.blueGrey,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

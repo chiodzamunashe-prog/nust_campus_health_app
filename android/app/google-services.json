@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "859608128667",
+    "project_id": "nustdb",
+    "storage_bucket": "nustdb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:859608128667:android:c0dd91651d414f5db47a3e",
+        "android_client_info": {
+          "package_name": "com.thefabone.nustcampushealthapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUEVkiFOicls_4esCcm_62Y67E6mYBP8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

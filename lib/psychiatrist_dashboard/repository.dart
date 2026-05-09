@@ -42,6 +42,7 @@ abstract class DashboardRepository {
 
   // Admin Methods
   Stream<Map<String, dynamic>> fetchAdminStats();
+  Future<List<Map<String, String>>> fetchUsersByRole(List<String> roles);
 }
 
 // Default repository instance. Replace with FirestoreRepository when ready.

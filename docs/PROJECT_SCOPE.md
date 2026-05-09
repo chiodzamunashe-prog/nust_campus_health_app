@@ -27,23 +27,29 @@ The table below outlines all planned modules. Each module can be developed indep
 | 8 | **Admin Panel** | ✅ Completed | Admin users manage staff accounts, roles, and view analytics |
 | 9 | **Authentication & User Management** | ✅ Completed | Role-based login (student, admin, psy) with branded NUST theme |
 | 10 | **Profile Management** | ✅ Completed | Basic profile viewing implemented |
+| 11 | **Counselling** | ✅ Completed | Self-help guidelines and quick actions for mental health support |
+| 12 | **Lab Module** | ✅ Completed | Dashboard for Lab Technicians to record and track test results |
+| 13 | **Pharmacist Dashboard** | ✅ Completed | Dashboard for pharmacists to manage and dispense prescriptions |
+| 14 | **Emergency** | ✅ Completed | Emergency contact and quick response features |
+| 15 | **Prescriptions** | ✅ Completed | Student-facing module to view and manage active prescriptions |
 
 ---
 
 ## 2.5 Project Progress Summary
 
-**Overall Completion: 100% (10 of 10 modules complete) 🎉**
+**Overall Completion: 100% (15 of 15 modules complete) 🎉**
 
 | Category | Status | Progress |
 |----------|--------|----------|
-| Core Modules Completed | 10/10 | 100% ✅ |
+| Core Modules Completed | 15/15 | 100% ✅ |
 | Psychiatrist Dashboard | 7/7 Features | 100% ✅ |
 | GP Dashboard | 5/5 Features | 100% ✅ |
+| Lab & Pharmacy Modules | Complete | 100% ✅ |
 | Chat Module | Complete | 100% ✅ |
 | Frontend/UI | Complete | 100% ✅ |
 | Backend Integration | Firestore + Mock | 100% ✅ |
 | Authentication | Role-based Auth | 100% ✅ |
-| **Remaining Modules** | **0 of 10** | **0%** |
+| **Remaining Modules** | **0 of 15** | **0%** |
 
 **Last Updated**: April 24, 2026  
 **Latest Commit**: Chat Module Integrated and Project Complete!

@@ -15,8 +15,19 @@ class Appointment {
   final String patientId;
   final DateTime time;
   final String status; // e.g., pending, confirmed, completed
+  final String type;   // e.g., psychiatrist, gp
+  final String reason;
+  final String? providerId;
 
-  Appointment({required this.id, required this.patientId, required this.time, this.status = 'pending'});
+  Appointment({
+    required this.id,
+    required this.patientId,
+    required this.time,
+    this.status = 'pending',
+    this.type = 'psychiatrist',
+    this.reason = '',
+    this.providerId,
+  });
 
   factory Appointment.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -25,6 +36,9 @@ class Appointment {
       patientId: data['patientId'] ?? '',
       time: (data['time'] as Timestamp).toDate(),
       status: data['status'] ?? 'pending',
+      type: data['type'] ?? 'psychiatrist',
+      reason: data['reason'] ?? '',
+      providerId: data['providerId'],
     );
   }
 }

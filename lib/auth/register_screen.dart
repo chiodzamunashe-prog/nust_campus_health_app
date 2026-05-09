@@ -16,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmCtrl = TextEditingController();
   bool _loading = false;
   String? _error;
+  String _selectedRole = 'student';
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +66,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.health_and_safety,
-            size: 60,
-            color: Color(0xFF003366),
+          child: Image.asset(
+            'assets/logo.png',
+            height: 60,
+            width: 60,
+            fit: BoxFit.contain,
           ),
         ),
         const SizedBox(height: 24),
@@ -117,17 +119,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _identifierCtrl,
-                label: 'Email or Student ID',
+                label: 'Email',
                 icon: Icons.email_outlined,
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Required';
+                  
+                  bool isStudentRole = _selectedRole == 'student';
+
+                  // If it's NOT a student, they can use ANY email they want
+                  if (!isStudentRole) {
+                    return null;
+                  }
+
+                  // If it IS a student, they MUST use the NUST format
+                  if (!v.endsWith('@students.nust.zw')) {
+                    return 'Students must use their official NUST email (@students.nust.zw)';
+                  }
+                  
+                  // Specific format check for students (n + 8 digits + 1 letter)
+                  if (!RegExp(r'^[nN]\d{8}[a-zA-Z]@').hasMatch(v)) {
+                    return 'Invalid student email format (e.g., n12345678X@students.nust.zw)';
+                  }
+                  
+                  return null;
+                },
               ),
+              const SizedBox(height: 16),
+              _buildRoleDropdown(),
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _passwordCtrl,
                 label: 'Password',
                 icon: Icons.lock_outline,
                 obscureText: true,
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Required';
+                  if (v.length < 8) return 'Password must be at least 8 characters';
+                  if (!v.contains(RegExp(r'[A-Z]'))) return 'Must contain at least one uppercase letter';
+                  if (!v.contains(RegExp(r'[a-z]'))) return 'Must contain at least one lowercase letter';
+                  if (!v.contains(RegExp(r'[0-9]'))) return 'Must contain at least one digit';
+                  if (!v.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return 'Must contain at least one special character';
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -211,6 +244,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  Widget _buildRoleDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedRole,
+      decoration: InputDecoration(
+        labelText: 'Account Type',
+        prefixIcon: const Icon(Icons.badge_outlined),
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      items: const [
+        DropdownMenuItem(value: 'student', child: Text('Student')),
+        DropdownMenuItem(value: 'psychiatrist', child: Text('Psychiatrist')),
+        DropdownMenuItem(value: 'gp', child: Text('General Practitioner')),
+        DropdownMenuItem(value: 'lab_tech', child: Text('Lab Technician')),
+        DropdownMenuItem(value: 'pharmacist', child: Text('Pharmacist')),
+        DropdownMenuItem(value: 'admin', child: Text('System Admin')),
+      ],
+      onChanged: (v) {
+        if (v != null) setState(() => _selectedRole = v);
+      },
+    );
+  }
+
   Widget _buildFooter() {
     return Column(
       children: [
@@ -240,6 +300,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _identifierCtrl.text.trim(),
       _passwordCtrl.text.trim(),
       _nameCtrl.text.trim(),
+      _selectedRole,
     );
     if (!mounted) return;
     setState(() => _loading = false);

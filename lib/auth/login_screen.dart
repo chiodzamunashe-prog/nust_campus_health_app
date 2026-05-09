@@ -67,10 +67,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.local_hospital,
-            size: 80,
-            color: Color(0xFF003366),
+          child: Image.asset(
+            'assets/logo.png',
+            height: 80,
+            width: 80,
+            fit: BoxFit.contain,
           ),
         ),
         const SizedBox(height: 24),

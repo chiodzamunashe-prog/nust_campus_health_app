@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -101,24 +100,8 @@ class AppNotificationService {
     }
   }
 
-  Future<void> updateBadgeCount(int unreadCount) async {
-    if (kIsWeb) {
-      return;
-    }
-
-    try {
-      final supported = await FlutterAppBadger.isAppBadgeSupported();
-      if (!supported) {
-        return;
-      }
-      if (unreadCount <= 0) {
-        FlutterAppBadger.removeBadge();
-      } else {
-        FlutterAppBadger.updateBadgeCount(unreadCount);
-      }
-    } catch (_) {
-      // Ignore badge failures on unsupported launchers/platforms.
-    }
+  Future<void> clearNotifications() async {
+    await _localNotifications.cancelAll();
   }
 
   Future<void> scheduleReminder(Reminder reminder) async {

@@ -86,7 +86,24 @@ class FirestoreRepository implements DashboardRepository {
 
   @override
   Stream<List<Appointment>> fetchAppointments() {
-    return _db.collection('appointments').snapshots().map((snapshot) {
+    return _db
+        .collection('appointments')
+        .where('type', isEqualTo: 'psychiatrist')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map<Appointment>((doc) => Appointment.fromFirestore(doc))
+          .toList();
+    });
+  }
+
+  @override
+  Stream<List<Appointment>> fetchAppointmentsByType(String type) {
+    return _db
+        .collection('appointments')
+        .where('type', isEqualTo: type)
+        .snapshots()
+        .map((snapshot) {
       return snapshot.docs
           .map<Appointment>((doc) => Appointment.fromFirestore(doc))
           .toList();
@@ -100,6 +117,7 @@ class FirestoreRepository implements DashboardRepository {
 
     return _db
         .collection('appointments')
+        .where('type', isEqualTo: 'psychiatrist')
         .where('time', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
         .where('time', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
         .snapshots()
@@ -173,6 +191,10 @@ class FirestoreRepository implements DashboardRepository {
       'patientId': appointment.patientId,
       'time': Timestamp.fromDate(appointment.time),
       'status': appointment.status,
+      'type': appointment.type,
+      'reason': appointment.reason,
+      'providerId': appointment.providerId,
+      'createdAt': FieldValue.serverTimestamp(),
     });
     return true;
   }
@@ -387,6 +409,17 @@ class FirestoreRepository implements DashboardRepository {
         };
       },
     );
+  }
+
+  Future<List<Map<String, String>>> fetchUsersByRole(List<String> roles) async {
+    final query = await _db.collection('users')
+        .where('role', whereIn: roles)
+        .get();
+    
+    return query.docs.map((doc) => {
+      'id': doc.id,
+      'name': (doc.data()['displayName'] as String? ?? 'Unknown'),
+    }).toList();
   }
 }
 

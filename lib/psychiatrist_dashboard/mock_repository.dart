@@ -253,6 +253,15 @@ class MockRepository implements DashboardRepository {
   }
 
   @override
+  Future<List<Map<String, String>>> fetchUsersByRole(List<String> roles) async {
+    return [
+      {'id': 'student_1', 'name': 'Panashe Chiodza'},
+      {'id': 'student_2', 'name': 'John Doe'},
+      {'id': 'staff_1', 'name': 'Dr. Jane Smith'},
+    ];
+  }
+
+  @override
   Future<bool> deleteNote(String noteId) async {
     final index = _notes.indexWhere((n) => n.id == noteId);
     if (index != -1) {

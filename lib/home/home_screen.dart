@@ -6,6 +6,13 @@ import '../counselling/counselling.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 17) return 'Good Afternoon,';
+    return 'Good Evening,';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,9 +121,9 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Good Morning,',
-            style: TextStyle(
+          Text(
+            _getGreeting(),
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 18,
               fontWeight: FontWeight.w400,
@@ -543,86 +550,58 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: AuthService.instance.isLoggedIn,
-            builder: (context, loggedIn, _) {
+          ValueListenableBuilder<UserRole>(
+            valueListenable: AuthService.instance.userRole,
+            builder: (context, role, _) {
+              if (role != UserRole.psychiatrist) return const SizedBox.shrink();
               return ListTile(
                 leading: const Icon(Icons.medical_services),
                 title: const Text('Psychiatrist Dashboard'),
                 onTap: () {
                   Navigator.pop(context);
-                  if (loggedIn) {
-                    Navigator.pushNamed(context, '/psy_dashboard');
-                  } else {
-                    Navigator.pushNamed(
-                      context,
-                      '/login',
-                      arguments: '/psy_dashboard',
-                    );
-                  }
+                  Navigator.pushNamed(context, '/psy_dashboard');
                 },
               );
             },
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: AuthService.instance.isLoggedIn,
-            builder: (context, loggedIn, _) {
+          ValueListenableBuilder<UserRole>(
+            valueListenable: AuthService.instance.userRole,
+            builder: (context, role, _) {
+              if (role != UserRole.gp) return const SizedBox.shrink();
               return ListTile(
                 leading: const Icon(Icons.medical_services_outlined),
                 title: const Text('GP Dashboard'),
                 onTap: () {
                   Navigator.pop(context);
-                  if (loggedIn) {
-                    Navigator.pushNamed(context, '/gp_dashboard');
-                  } else {
-                    Navigator.pushNamed(
-                      context,
-                      '/login',
-                      arguments: '/gp_dashboard',
-                    );
-                  }
+                  Navigator.pushNamed(context, '/gp_dashboard');
                 },
               );
             },
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: AuthService.instance.isLoggedIn,
-            builder: (context, loggedIn, _) {
+          ValueListenableBuilder<UserRole>(
+            valueListenable: AuthService.instance.userRole,
+            builder: (context, role, _) {
+              if (role != UserRole.lab_tech) return const SizedBox.shrink();
               return ListTile(
                 leading: const Icon(Icons.biotech),
                 title: const Text('Lab Dashboard'),
                 onTap: () {
                   Navigator.pop(context);
-                  if (loggedIn) {
-                    Navigator.pushNamed(context, '/lab_dashboard');
-                  } else {
-                    Navigator.pushNamed(
-                      context,
-                      '/login',
-                      arguments: '/lab_dashboard',
-                    );
-                  }
+                  Navigator.pushNamed(context, '/lab_dashboard');
                 },
               );
             },
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: AuthService.instance.isLoggedIn,
-            builder: (context, loggedIn, _) {
+          ValueListenableBuilder<UserRole>(
+            valueListenable: AuthService.instance.userRole,
+            builder: (context, role, _) {
+              if (role != UserRole.pharmacist) return const SizedBox.shrink();
               return ListTile(
                 leading: const Icon(Icons.medication),
                 title: const Text('Pharmacy Dashboard'),
                 onTap: () {
                   Navigator.pop(context);
-                  if (loggedIn) {
-                    Navigator.pushNamed(context, '/pharmacist_dashboard');
-                  } else {
-                    Navigator.pushNamed(
-                      context,
-                      '/login',
-                      arguments: '/pharmacist_dashboard',
-                    );
-                  }
+                  Navigator.pushNamed(context, '/pharmacist_dashboard');
                 },
               );
             },
@@ -656,12 +635,18 @@ class HomeScreen extends StatelessWidget {
                 leading: Icon(loggedIn ? Icons.logout : Icons.login),
                 title: Text(loggedIn ? 'Logout' : 'Login'),
                 onTap: () async {
-                  Navigator.pop(context);
+                  Navigator.pop(context); // Close drawer
                   if (loggedIn) {
                     await AuthService.instance.logout();
                     if (context.mounted) {
+                      // Redirect to login and clear all previous screens
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Logged out')),
+                        const SnackBar(content: Text('Logged out successfully')),
                       );
                     }
                   } else {

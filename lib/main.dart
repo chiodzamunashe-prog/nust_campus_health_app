@@ -25,6 +25,7 @@ import 'notifications/notification_service.dart';
 import 'chat/chat_list_screen.dart';
 import 'admin/ui/admin_dashboard.dart';
 import 'admin/repository/admin_repository.dart';
+import 'admin/repository/firestore_admin_repository.dart';
 import 'psychiatrist_dashboard/dashboard_screen.dart';
 import 'psychiatrist_dashboard/patient_summary_screen.dart' as psy_summary;
 import 'psychiatrist_dashboard/models.dart' as psy_models;
@@ -62,21 +63,17 @@ class _MyAppState extends State<MyApp> {
     final firebaseReady = await _initializeFirebase();
 
     if (firebaseReady) {
-      try {
-        repository = FirestoreRepository();
-        chatRepository = chat_firestore.FirestoreChatRepository();
-        recordsRepository = FirestoreRecordsRepository();
-      } catch (_) {
-        initMockRepository();
-        chat_mock.initMockChatRepository();
-        initMockRecordsRepository();
-      }
-      initAdminMockRepository();
+      repository = FirestoreRepository();
+      chatRepository = chat_firestore.FirestoreChatRepository();
+      recordsRepository = FirestoreRecordsRepository();
+      adminRepository = FirestoreAdminRepository();
     } else {
-      initMockRepository();
-      chat_mock.initMockChatRepository();
-      initAdminMockRepository();
-      initMockRecordsRepository();
+      // Initialize with mocks if firebase fails
+      repository = MockRepository();
+      adminRepository = MockAdminRepository();
+      chatRepository = chat_mock.MockChatRepository();
+      recordsRepository = MockRecordsRepository();
+      debugPrint('CRITICAL: Firebase failed to initialize. Falling back to Mock data.');
     }
 
     await AppNotificationService.instance.initialize(
@@ -102,6 +99,24 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    Widget buildProtectedRoute(Widget screen, UserRole requiredRole) {
+      if (!AuthService.instance.isLoggedIn.value) {
+        return const LoginScreen();
+      }
+      if (AuthService.instance.userRole.value != requiredRole) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('Access Denied')),
+          body: const Center(
+            child: Text(
+              'Access Denied. You do not have permission to view this page.',
+              style: TextStyle(fontSize: 16, color: Colors.red),
+            ),
+          ),
+        );
+      }
+      return screen;
+    }
+
     return FutureBuilder(
       future: _bootstrapFuture,
       builder: (context, snapshot) {
@@ -175,7 +190,10 @@ class _MyAppState extends State<MyApp> {
 
                 if (settings.name == '/pharmacist_dashboard') {
                   return MaterialPageRoute(
-                    builder: (_) => const PharmacistDashboardScreen(),
+                    builder: (_) => buildProtectedRoute(
+                      const PharmacistDashboardScreen(),
+                      UserRole.pharmacist,
+                    ),
                     settings: settings,
                   );
                 }
@@ -191,7 +209,10 @@ class _MyAppState extends State<MyApp> {
 
                 if (settings.name == '/gp_dashboard') {
                   return MaterialPageRoute(
-                    builder: (_) => const GPDashboardScreen(),
+                    builder: (_) => buildProtectedRoute(
+                      const GPDashboardScreen(),
+                      UserRole.gp,
+                    ),
                     settings: settings,
                   );
                 }
@@ -219,7 +240,10 @@ class _MyAppState extends State<MyApp> {
 
                 if (settings.name == '/lab_dashboard') {
                   return MaterialPageRoute(
-                    builder: (_) => const LabDashboardScreen(),
+                    builder: (_) => buildProtectedRoute(
+                      const LabDashboardScreen(),
+                      UserRole.lab_tech,
+                    ),
                     settings: settings,
                   );
                 }
@@ -248,14 +272,20 @@ class _MyAppState extends State<MyApp> {
 
                 if (settings.name == '/admin') {
                   return MaterialPageRoute(
-                    builder: (_) => const AdminDashboard(),
+                    builder: (_) => buildProtectedRoute(
+                      const AdminDashboard(),
+                      UserRole.admin,
+                    ),
                     settings: settings,
                   );
                 }
 
                 if (settings.name == '/psy_dashboard') {
                   return MaterialPageRoute(
-                    builder: (_) => const PsychiatristDashboardScreen(),
+                    builder: (_) => buildProtectedRoute(
+                      const PsychiatristDashboardScreen(),
+                      UserRole.psychiatrist,
+                    ),
                     settings: settings,
                   );
                 }

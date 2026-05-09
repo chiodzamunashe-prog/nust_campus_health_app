@@ -188,7 +188,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         final unreadCount = notifications.where((n) => !n.isRead).length;
 
         if (hasData) {
-          _notificationService.updateBadgeCount(unreadCount);
+          // Badge update removed
         }
 
         return ListView.separated(
@@ -877,8 +877,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   Future<void> _refreshBadge() async {
     try {
-      final unreadCount = await _repository.getUnreadCount(_currentUserId);
-      await _notificationService.updateBadgeCount(unreadCount);
+      // Badge update removed
     } catch (e) {
       // Handle error silently
     }
